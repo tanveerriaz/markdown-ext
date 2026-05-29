@@ -57,6 +57,12 @@ Screenshots are also shown on the [landing page setup section](https://markdown-
 - [Mozilla Readability](https://github.com/mozilla/readability) (Apache-2.0)
 - [Turndown](https://github.com/mixmark-io/turndown) (MIT)
 
+## Trademarks
+
+Google Chrome and the Chrome logo are trademarks of Google LLC. Firefox and the Firefox logo are trademarks of the Mozilla Foundation. They appear on the landing page only to indicate browser compatibility. This project is not endorsed by Google or Mozilla.
+
+Full attribution and logo sources: **[TRADEMARKS.md](TRADEMARKS.md)**
+
 ## Author
 
 **Tanveer Riaz** — [GitHub](https://github.com/tanveerriaz/markdown-ext)

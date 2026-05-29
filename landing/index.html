@@ -215,10 +215,9 @@
         border: 1px solid transparent;
       }
 
-      .badge svg {
+      .badge .brand-icon {
         width: 18px;
         height: 18px;
-        flex-shrink: 0;
       }
 
       .badge-chrome {
@@ -295,8 +294,7 @@
           transform 0.2s ease;
       }
 
-      .btn svg,
-      .btn .btn-icon svg {
+      .btn svg {
         width: 20px;
         height: 20px;
         flex-shrink: 0;
@@ -306,6 +304,22 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
+      }
+
+      .brand-icon {
+        display: block;
+        object-fit: contain;
+        flex-shrink: 0;
+      }
+
+      .brand-icon--sm {
+        width: 20px;
+        height: 20px;
+      }
+
+      .brand-icon--md {
+        width: 28px;
+        height: 28px;
       }
 
       .btn-chrome {
@@ -534,6 +548,21 @@
         color: var(--text-muted);
       }
 
+      .footer-trademarks {
+        margin: 0 0 12px;
+        max-width: 520px;
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--text-muted);
+      }
+
+      .footer-trademarks a {
+        color: var(--accent);
+        font-weight: 500;
+      }
+
       /* Setup guide */
       .setup-guide {
         max-width: 720px;
@@ -660,7 +689,7 @@
         transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
       }
 
-      .setup-nav a svg {
+      .setup-nav a .brand-icon {
         width: 18px;
         height: 18px;
       }
@@ -733,10 +762,9 @@
         color: var(--text);
       }
 
-      .setup-browser-heading svg {
+      .setup-browser-heading .brand-icon {
         width: 28px;
         height: 28px;
-        flex-shrink: 0;
       }
 
       .setup-warning {
@@ -967,33 +995,18 @@
           </p>
           <div class="badge-row">
             <span class="badge badge-chrome">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" fill="#fff"/>
-                <path fill="#EA4335" d="M12 2c5.52 0 10 3.58 11.17 8.5H12V2z"/>
-                <path fill="#34A853" d="M2 12a10 10 0 0 1 2.93-7.07L12 12H2z"/>
-                <path fill="#FBBC05" d="M4.93 16.93A10 10 0 0 0 12 22V12H4.93z"/>
-                <path fill="#4285F4" d="M12 12h10.17A10 10 0 0 0 12 2v10z"/>
-              </svg>
+              <img class="brand-icon" src="./images/brands/google-chrome.svg" alt="" width="18" height="18" aria-hidden="true" />
               Chrome · Edge · Brave
             </span>
             <span class="badge badge-firefox">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" fill="#FF7139"/>
-                <path fill="#fff" fill-opacity="0.95" d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8.5c-1.93 0-3.5-1.57-3.5-3.5S10.07 8.5 12 8.5s3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
-              </svg>
+              <img class="brand-icon" src="./images/brands/firefox.svg" alt="" width="18" height="18" aria-hidden="true" />
               Firefox
             </span>
           </div>
           <div class="cta-row">
             <a class="btn btn-chrome" href="./markdown-ext.zip" download>
               <span class="btn-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" fill="#fff"/>
-                  <path fill="#EA4335" d="M12 2c5.52 0 10 3.58 11.17 8.5H12V2z"/>
-                  <path fill="#34A853" d="M2 12a10 10 0 0 1 2.93-7.07L12 12H2z"/>
-                  <path fill="#FBBC05" d="M4.93 16.93A10 10 0 0 0 12 22V12H4.93z"/>
-                  <path fill="#4285F4" d="M12 12h10.17A10 10 0 0 0 12 2v10z"/>
-                </svg>
+                <img class="brand-icon brand-icon--sm" src="./images/brands/google-chrome.svg" alt="" width="20" height="20" />
               </span>
               Chrome extension
             </a>
@@ -1004,11 +1017,7 @@
               title="Install via about:debugging only — not about:addons"
             >
               <span class="btn-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" fill="#fff" fill-opacity="0.95"/>
-                  <circle cx="12" cy="12" r="9" fill="#FF7139"/>
-                  <ellipse cx="12" cy="12" rx="4" ry="5" fill="#fff" fill-opacity="0.9"/>
-                </svg>
+                <img class="brand-icon brand-icon--sm" src="./images/brands/firefox.svg" alt="" width="20" height="20" />
               </span>
               Firefox extension
             </a>
@@ -1028,16 +1037,11 @@
           </div>
           <div class="cta-hints content">
             <div class="cta-hint cta-hint-chrome">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" fill="currentColor" fill-opacity="0.15"/>
-                <path fill="currentColor" d="M12 6v6l4 2"/>
-              </svg>
+              <img class="brand-icon brand-icon--sm" src="./images/brands/google-chrome.svg" alt="" width="20" height="20" aria-hidden="true" />
               <span><strong>Chrome:</strong> unzip → load <code>chrome-extension/</code> at <code>chrome://extensions</code></span>
             </div>
             <div class="cta-hint cta-hint-firefox">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path fill="currentColor" d="M12 2 2 12h4v8h12v-8h4L12 2zm0 4.5L18 12h-2.5v5.5h-7V12H6l6-5.5z"/>
-              </svg>
+              <img class="brand-icon brand-icon--sm" src="./images/brands/firefox.svg" alt="" width="20" height="20" aria-hidden="true" />
               <span><strong>Firefox:</strong> only <code>about:debugging</code> — not the Add-ons page</span>
             </div>
           </div>
@@ -1082,20 +1086,11 @@
           </p>
           <nav class="setup-nav content" aria-label="Setup by browser">
             <a href="#chrome-setup">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" fill="#fff"/>
-                <path fill="#EA4335" d="M12 2c5.52 0 10 3.58 11.17 8.5H12V2z"/>
-                <path fill="#34A853" d="M2 12a10 10 0 0 1 2.93-7.07L12 12H2z"/>
-                <path fill="#FBBC05" d="M4.93 16.93A10 10 0 0 0 12 22V12H4.93z"/>
-                <path fill="#4285F4" d="M12 12h10.17A10 10 0 0 0 12 2v10z"/>
-              </svg>
+              <img class="brand-icon" src="./images/brands/google-chrome.svg" alt="" width="18" height="18" aria-hidden="true" />
               Chrome / Edge / Brave
             </a>
             <a href="#firefox-setup">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" fill="#FF7139"/>
-                <ellipse cx="12" cy="12" rx="4" ry="5" fill="#fff" fill-opacity="0.9"/>
-              </svg>
+              <img class="brand-icon" src="./images/brands/firefox.svg" alt="" width="18" height="18" aria-hidden="true" />
               Firefox
             </a>
             <a href="https://github.com/tanveerriaz/markdown-ext/blob/main/docs/SETUP.md" target="_blank" rel="noopener noreferrer">Full guide</a>
@@ -1119,13 +1114,7 @@
           <div class="setup-guide">
             <section class="setup-browser setup-browser-chrome" id="chrome-setup" aria-labelledby="chrome-setup-heading">
               <h3 class="setup-browser-heading" id="chrome-setup-heading">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="12" r="10" fill="#fff"/>
-                  <path fill="#EA4335" d="M12 2c5.52 0 10 3.58 11.17 8.5H12V2z"/>
-                  <path fill="#34A853" d="M2 12a10 10 0 0 1 2.93-7.07L12 12H2z"/>
-                  <path fill="#FBBC05" d="M4.93 16.93A10 10 0 0 0 12 22V12H4.93z"/>
-                  <path fill="#4285F4" d="M12 12h10.17A10 10 0 0 0 12 2v10z"/>
-                </svg>
+                <img class="brand-icon brand-icon--md" src="./images/brands/google-chrome.svg" alt="" width="28" height="28" aria-hidden="true" />
                 Chrome / Edge / Brave
               </h3>
               <article class="setup-step">
@@ -1197,10 +1186,7 @@
 
             <section class="setup-browser setup-browser-firefox" id="firefox-setup" aria-labelledby="firefox-setup-heading">
               <h3 class="setup-browser-heading" id="firefox-setup-heading">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="12" r="10" fill="#FF7139"/>
-                  <ellipse cx="12" cy="12" rx="4" ry="5" fill="#fff" fill-opacity="0.9"/>
-                </svg>
+                <img class="brand-icon brand-icon--md" src="./images/brands/firefox.svg" alt="" width="28" height="28" aria-hidden="true" />
                 Firefox
               </h3>
               <p class="setup-warning">
@@ -1301,6 +1287,10 @@
         <span aria-hidden="true">·</span>
         <a href="#">Other Tools</a>
       </nav>
+      <p class="footer-trademarks">
+        Google Chrome and Firefox logos are trademarks of their respective owners.
+        <a href="https://github.com/tanveerriaz/markdown-ext/blob/main/TRADEMARKS.md">Trademark notice</a>
+      </p>
       <p class="footer-copy">© <span id="year"></span> Tanveer Riaz</p>
     </footer>
 
