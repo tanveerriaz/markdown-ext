@@ -15,11 +15,12 @@ Convert any webpage into **clean, agent-ready Markdown** in one click. Built as 
 ## Quick start
 
 1. Download **`markdown-ext.zip`** from [markdown-ext.pages.dev](https://markdown-ext.pages.dev/)
-2. Unzip the archive
-3. Install the **`extension`** folder in your browser (Developer mode → Load unpacked)
-4. Open any page, click the extension icon, then **Convert**
+2. Unzip — you get **`markdown-ext/extension/`** (Chrome) and **`markdown-ext.xpi`** (Firefox)
+3. **Chrome / Edge:** `chrome://extensions` → Developer mode → **Load unpacked** → select `extension/`
+4. **Firefox:** `about:debugging` → *This Firefox* → **Load Temporary Add-on** → `extension/manifest.json` (set picker to *All Files*) or `markdown-ext.xpi`
+5. Open any page, click the extension icon, then **Convert**
 
-Full illustrated steps: **[docs/SETUP.md](docs/SETUP.md)**
+Full illustrated steps (Chrome + Firefox): **[docs/SETUP.md](docs/SETUP.md)**
 
 ## Project structure
 
