@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Extensions – Chrome (documentation mock)</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: #f1f3f4;
+        color: #202124;
+      }
+      .bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px;
+        background: #fff;
+        border-bottom: 1px solid #dadce0;
+      }
+      .bar h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 400;
+      }
+      .dev {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+      .toggle {
+        width: 36px;
+        height: 20px;
+        border-radius: 10px;
+        background: #1a73e8;
+        position: relative;
+      }
+      .toggle::after {
+        content: "";
+        position: absolute;
+        right: 2px;
+        top: 2px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+      }
+      .actions {
+        padding: 16px 24px;
+        display: flex;
+        gap: 12px;
+      }
+      .btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: 1px solid #dadce0;
+        background: #fff;
+        font-size: 14px;
+        color: #1a73e8;
+      }
+      .btn.primary {
+        background: #1a73e8;
+        color: #fff;
+        border-color: #1a73e8;
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.25);
+      }
+      .card {
+        margin: 0 24px 16px;
+        padding: 16px;
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #dadce0;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+      .icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #7c3aed, #22c55e);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 18px;
+      }
+      .meta h2 {
+        margin: 0 0 4px;
+        font-size: 16px;
+      }
+      .meta p {
+        margin: 0;
+        font-size: 13px;
+        color: #5f6368;
+      }
+      .callout {
+        margin: 8px 24px 24px;
+        padding: 12px 16px;
+        background: #e8f0fe;
+        border-left: 4px solid #1a73e8;
+        font-size: 14px;
+        border-radius: 0 4px 4px 0;
+      }
+      .label {
+        display: inline-block;
+        margin: 0 24px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bar">
+      <h1>Extensions</h1>
+      <div class="dev">
+        <span>Developer mode</span>
+        <div class="toggle" aria-hidden="true"></div>
+      </div>
+    </div>
+    <p class="label">Step 2 — Enable developer mode</p>
+    <div class="actions">
+      <span class="btn">Pack extension</span>
+      <span class="btn">Update</span>
+      <span class="btn primary">Load unpacked</span>
+    </div>
+    <p class="label">Step 3 — Load the extension folder</p>
+    <div class="callout">
+      Select the <strong>extension</strong> folder inside the unzipped download (the folder that contains <code>manifest.json</code>).
+    </div>
+    <div class="card">
+      <div class="icon">M</div>
+      <div class="meta">
+        <h2>Markdown Convert 1.2.0</h2>
+        <p>Convert any webpage to clean Markdown.</p>
+      </div>
+    </div>
+  </body>
+</html>

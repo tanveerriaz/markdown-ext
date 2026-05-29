@@ -417,6 +417,69 @@
         color: var(--text-muted);
       }
 
+      /* Setup guide */
+      .setup-guide {
+        max-width: 720px;
+        margin: 0 auto;
+      }
+
+      .setup-intro {
+        margin: 0 auto 32px;
+        max-width: 560px;
+        text-align: center;
+        font-size: 16px;
+        color: var(--text-muted);
+        line-height: 1.6;
+      }
+
+      .setup-intro a {
+        color: var(--accent);
+        font-weight: 500;
+      }
+
+      .setup-intro a:hover {
+        color: var(--accent-hover);
+      }
+
+      .setup-step {
+        margin-bottom: 40px;
+      }
+
+      .setup-step:last-child {
+        margin-bottom: 0;
+      }
+
+      .setup-step h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .setup-step p {
+        margin: 0 0 16px;
+        font-size: 15px;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      .setup-step img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-md);
+      }
+
+      .setup-step code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.9em;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: var(--accent-light);
+        color: var(--accent-hover);
+      }
+
       @media (max-width: 768px) {
         .section {
           padding: 48px 0;
@@ -582,32 +645,60 @@
           </div>
         </section>
 
-        <section class="section" aria-labelledby="steps-heading">
-          <h2 class="section-heading content" id="steps-heading">🛠️ How it works</h2>
-          <div class="steps">
-            <div class="step">
-              <span class="step-number">1</span>
-              <div class="step-body">
-                <h3>Download</h3>
-                <p>Grab the extension zip and unzip it</p>
-              </div>
-            </div>
-            <div class="step">
-              <span class="step-number">2</span>
-              <div class="step-body">
-                <h3>Install</h3>
-                <p>
-                  Open chrome://extensions, enable Developer Mode, click "Load unpacked"
-                </p>
-              </div>
-            </div>
-            <div class="step">
-              <span class="step-number">3</span>
-              <div class="step-body">
-                <h3>Convert</h3>
-                <p>Visit any page, click the icon, get Markdown</p>
-              </div>
-            </div>
+        <section class="section" aria-labelledby="setup-heading">
+          <h2 class="section-heading content" id="setup-heading">🛠️ Setup guide</h2>
+          <p class="setup-intro content">
+            Install in Chrome or Edge in a few minutes. Full guide with troubleshooting on
+            <a href="https://github.com/tanveerriaz/markdown-ext/blob/main/docs/SETUP.md" target="_blank" rel="noopener noreferrer">GitHub</a>.
+          </p>
+          <div class="setup-guide">
+            <article class="setup-step">
+              <h3>1. Download the extension</h3>
+              <p>Click Download above, unzip the file, and locate the <code>extension</code> folder.</p>
+              <img
+                src="./images/setup/01-download.png"
+                alt="Markdown Convert landing page with Download button"
+                width="720"
+                height="405"
+                loading="lazy"
+              />
+            </article>
+            <article class="setup-step">
+              <h3>2. Enable Developer mode</h3>
+              <p>Open <code>chrome://extensions</code> and turn on Developer mode (top-right).</p>
+              <img
+                src="./images/setup/02-developer-mode.png"
+                alt="Chrome Extensions page with Developer mode enabled"
+                width="720"
+                height="405"
+                loading="lazy"
+              />
+            </article>
+            <article class="setup-step">
+              <h3>3. Load unpacked</h3>
+              <p>
+                Click Load unpacked and select the <code>extension</code> folder (the one that
+                contains <code>manifest.json</code>).
+              </p>
+              <img
+                src="./images/setup/03-load-unpacked.png"
+                alt="Chrome Extensions page highlighting Load unpacked button"
+                width="720"
+                height="405"
+                loading="lazy"
+              />
+            </article>
+            <article class="setup-step">
+              <h3>4. Convert any page</h3>
+              <p>Visit a page, open the extension, click Convert, then copy or download Markdown.</p>
+              <img
+                src="./images/setup/04-convert-popup.png"
+                alt="Markdown Convert popup showing YAML frontmatter and preview"
+                width="720"
+                height="405"
+                loading="lazy"
+              />
+            </article>
           </div>
         </section>
 
@@ -615,7 +706,7 @@
           <div class="content">
             <p class="tip">
               <strong>💡 Tip:</strong> On some Chrome versions you can also drag the
-              unzipped folder directly into chrome://extensions.
+              <code>extension</code> folder directly into <code>chrome://extensions</code>.
             </p>
           </div>
         </section>
@@ -627,6 +718,8 @@
       <p class="footer-made">Made with ☕ by Tanveer Riaz</p>
       <nav class="footer-links" aria-label="Footer">
         <a href="https://github.com/tanveerriaz/markdown-ext" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://github.com/tanveerriaz/markdown-ext/blob/main/docs/SETUP.md" target="_blank" rel="noopener noreferrer">Setup guide</a>
         <span aria-hidden="true">·</span>
         <a href="#">Other Tools</a>
       </nav>
