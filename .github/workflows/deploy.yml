@@ -5,12 +5,18 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Build extension zip
         run: |
@@ -22,5 +28,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          command: pages deploy landing --project-name=markdown-ext --branch=main
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy ./landing --project-name markdown-ext --branch main
 
