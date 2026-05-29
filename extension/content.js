@@ -84,8 +84,29 @@ const YOUTUBE_VIDEO_LINK_SELECTORS = [
   "ytd-video-renderer a#video-title-link",
   "ytd-playlist-video-renderer a#video-title",
   "ytd-compact-video-renderer a#video-title",
+  "yt-lockup-view-model a#video-title-link",
+  "yt-lockup-view-model a#video-title",
   "a#video-title-link",
   "a#video-title",
+];
+
+const YOUTUBE_SIDEBAR_SELECTORS = [
+  "ytd-guide-renderer",
+  "ytd-mini-guide-renderer",
+  "#guide",
+  "#guide-content",
+  "ytd-masthead",
+  "#header",
+  "ytd-playability-error-supported-renderers",
+];
+
+const YOUTUBE_GRID_ROOT_SELECTORS = [
+  "ytd-rich-grid-renderer",
+  "ytd-browse[page-subtype]",
+  "ytd-tabbed-page-content",
+  "#contents",
+  "#primary",
+  "ytd-section-list-renderer",
 ];
 
 /** @param {ParentNode} el */
@@ -223,48 +244,6 @@ function isYouTubeVideoHref(href) {
   }
 }
 
-/** @returns {{ title: string, href: string, meta: string }[]} */
-function collectYouTubeVideos() {
-  /** @type {Map<string, { title: string, href: string, meta: string }>} */
-  const videos = new Map();
-
-  for (const selector of YOUTUBE_VIDEO_LINK_SELECTORS) {
-    document.querySelectorAll(selector).forEach((node) => {
-      if (!(node instanceof HTMLAnchorElement)) return;
-
-      const href = node.href;
-      if (!isYouTubeVideoHref(href)) return;
-
-      const title = (node.getAttribute("title") || node.textContent || "")
-        .replace(/\s+/g, " ")
-        .trim();
-      if (!title || title.length < 2) return;
-
-      const row = node.closest(
-        "ytd-rich-item-renderer, ytd-grid-video-renderer, ytd-video-renderer, ytd-playlist-video-renderer, ytd-compact-video-renderer",
-      );
-
-      let meta = "";
-      if (row) {
-        const metaParts = Array.from(
-          row.querySelectorAll(
-            "#metadata-line span.inline-metadata-item, ytd-video-meta-block span, span.inline-metadata-item",
-          ),
-        )
-          .map((el) => (el.textContent || "").trim())
-          .filter(Boolean);
-        meta = metaParts.slice(0, 3).join(" · ");
-      }
-
-      if (!videos.has(href)) {
-        videos.set(href, { title, href, meta });
-      }
-    });
-  }
-
-  return Array.from(videos.values());
-}
-
 /** @returns {{ name: string, handle: string, stats: string, description: string }} */
 function getYouTubeChannelMeta() {
   const name =
@@ -337,31 +316,153 @@ function isYouTubeWatchPage() {
   return location.pathname === "/watch" || location.search.includes("v=");
 }
 
+function isYouTubeListingPage() {
+  const path = location.pathname;
+  if (isYouTubeWatchPage()) return false;
+  if (path.includes("/results") || path === "/feed/subscriptions") return false;
+
+  return (
+    path.includes("/@") ||
+    path.startsWith("/channel/") ||
+    path.startsWith("/c/") ||
+    path.startsWith("/user/") ||
+    /\/(videos|shorts|streams|playlists|featured|channels|about)$/.test(path)
+  );
+}
+
+function isInsideYouTubeSidebar(el) {
+  return YOUTUBE_SIDEBAR_SELECTORS.some((selector) => {
+    try {
+      return Boolean(el.closest(selector));
+    } catch {
+      return false;
+    }
+  });
+}
+
+function getYouTubeVideoGridRoot() {
+  for (const selector of YOUTUBE_GRID_ROOT_SELECTORS) {
+    const el = document.querySelector(selector);
+    if (el && !isInsideYouTubeSidebar(el)) return el;
+  }
+  return document.querySelector("ytd-app") || document.body || document;
+}
+
+/** @param {HTMLAnchorElement} node */
+function getYouTubeVideoTitle(node) {
+  const fromAttr =
+    node.getAttribute("title")?.trim() || node.getAttribute("aria-label")?.trim() || "";
+  if (fromAttr && fromAttr.length > 2) return fromAttr;
+
+  const formatted = node.querySelector("yt-formatted-string, .yt-formatted-string");
+  const fromFormatted = (formatted?.textContent || "").replace(/\s+/g, " ").trim();
+  if (fromFormatted.length > 2) return fromFormatted;
+
+  return (node.textContent || "").replace(/\s+/g, " ").trim();
+}
+
+/** @param {HTMLAnchorElement} node */
+function getYouTubeVideoMeta(node) {
+  const row = node.closest(
+    [
+      "ytd-rich-item-renderer",
+      "ytd-grid-video-renderer",
+      "ytd-video-renderer",
+      "ytd-playlist-video-renderer",
+      "ytd-compact-video-renderer",
+      "yt-lockup-view-model",
+      "ytd-rich-grid-media",
+    ].join(", "),
+  );
+
+  if (!row) return "";
+
+  const metaParts = Array.from(
+    row.querySelectorAll(
+      [
+        "#metadata-line span.inline-metadata-item",
+        "ytd-video-meta-block span",
+        "span.inline-metadata-item",
+        ".ytd-video-meta-block",
+        "yt-content-metadata-view-model span",
+        "span.ytd-video-meta-block",
+      ].join(", "),
+    ),
+  )
+    .map((el) => (el.textContent || "").replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+
+  return [...new Set(metaParts)].slice(0, 3).join(" · ");
+}
+
+/** @returns {{ title: string, href: string, meta: string }[]} */
+function collectYouTubeVideosFromRoot(root) {
+  /** @type {Map<string, { title: string, href: string, meta: string }>} */
+  const videos = new Map();
+
+  const addVideo = (node) => {
+    if (!(node instanceof HTMLAnchorElement)) return;
+    if (isInsideYouTubeSidebar(node)) return;
+
+    const href = node.href;
+    if (!isYouTubeVideoHref(href)) return;
+
+    const title = getYouTubeVideoTitle(node);
+    if (!title || title.length < 2) return;
+
+    const key = href.split("&")[0];
+    if (!videos.has(key)) {
+      videos.set(key, { title, href: key, meta: getYouTubeVideoMeta(node) });
+    }
+  };
+
+  for (const selector of YOUTUBE_VIDEO_LINK_SELECTORS) {
+    root.querySelectorAll(selector).forEach(addVideo);
+  }
+
+  root.querySelectorAll('a[href*="/watch"], a[href*="/shorts/"], a[href*="/live/"]').forEach(addVideo);
+
+  return Array.from(videos.values());
+}
+
+function collectYouTubeVideos() {
+  const root = getYouTubeVideoGridRoot();
+  const fromGrid = collectYouTubeVideosFromRoot(root);
+  if (fromGrid.length > 0) return fromGrid;
+
+  return collectYouTubeVideosFromRoot(document);
+}
+
 function extractYouTube() {
   if (!isYouTubeHost()) return null;
 
   // Single video pages: Readability handles title/description better.
   if (isYouTubeWatchPage()) return null;
 
+  if (!isYouTubeListingPage()) return null;
+
   const videos = collectYouTubeVideos();
   const meta = getYouTubeChannelMeta();
-
-  if (videos.length === 0) return null;
-
   const html = buildYouTubeListingHtml(videos, meta);
   const container = htmlToContainer(html);
   const cleanedHtml = container.innerHTML.trim();
 
-  if (!cleanedHtml || getTextLength(container) < MIN_TEXT_LENGTH) return null;
+  if (!cleanedHtml) return null;
 
   const title =
     meta.name || document.title.replace(/\s*-\s*YouTube\s*$/i, "").trim() || "YouTube";
+
+  let warning = YOUTUBE_LISTING_WARNING;
+  if (videos.length === 0) {
+    warning =
+      "No videos found in the page yet. Scroll down the channel to load videos, then convert again.";
+  }
 
   return {
     html: cleanedHtml,
     title,
     pageType: "listing",
-    warning: YOUTUBE_LISTING_WARNING,
+    warning,
   };
 }
 
