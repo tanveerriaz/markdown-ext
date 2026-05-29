@@ -8,8 +8,9 @@ After you unzip `markdown-ext.zip`, you get a **`markdown-ext`** folder with:
 
 | Item | Use |
 |------|-----|
-| **`extension/`** | Chrome / Edge / Brave — Load unpacked |
-| **`markdown-ext.xpi`** | Included in zip — only load via `about:debugging` (not `about:addons`) |
+| **`chrome-extension/`** | Chrome / Edge / Brave — Load unpacked |
+| **`firefox-extension.xpi`** | Firefox — load only via `about:debugging` (not `about:addons`) |
+| **`START-HERE.txt`** | Folder map (read first) |
 | **`INSTALL.txt`** | Quick reference |
 
 ![Unzipped folder showing extension subfolder and markdown-ext.xpi](screenshots/07-zip-contents.png)
@@ -40,11 +41,11 @@ After you unzip `markdown-ext.zip`, you get a **`markdown-ext`** folder with:
 ### Step 3 — Load unpacked
 
 1. Click **Load unpacked**
-2. Select **`markdown-ext/extension`** (the folder that contains `manifest.json`)
+2. Select **`markdown-ext/chrome-extension`** (the folder that contains `manifest.json`)
 
 ![Load unpacked and select the extension folder](screenshots/03-load-unpacked.png)
 
-**Tip:** On some Chrome versions you can drag the `extension` folder onto the Extensions page.
+**Tip:** On some Chrome versions you can drag the `chrome-extension` folder onto the Extensions page.
 
 You should see **Markdown Convert** in the list, version **1.2.2** or newer.
 
@@ -63,7 +64,7 @@ You should see **Markdown Convert** in the list, version **1.2.2** or newer.
 
 Firefox does not use “Load unpacked” the same way. Install a **temporary** add-on (removed when you fully quit Firefox).
 
-**Important:** Use **`about:debugging`**, not **`about:addons`**. Installing from the Add-ons page (gear → *Install Add-on From File*, or double-clicking `.xpi`) shows *“appears to be corrupt”* on release Firefox because unsigned extensions are not allowed there.
+**Important:** Use **`about:debugging`**, not **`about:addons`**. Installing from the Add-ons page (gear → *Install Add-on From File*, or double-clicking `.xpi`) fails on release Firefox with errors like *“has not been verified”* or *“appears to be corrupt”* — unsigned local extensions are not allowed there.
 
 ### Step 1 — Download
 
@@ -82,14 +83,14 @@ Same as Chrome: download and unzip from [markdown-ext.pages.dev](https://markdow
 **Option A — manifest.json (recommended)**
 
 1. In the file picker, set **Format** to **All Files** (not “Web Extensions” only)
-2. Open **`markdown-ext/extension/`**
+2. Open **`markdown-ext/chrome-extension/`**
 3. Select **`manifest.json`**
 
 ![macOS file picker: All Files and manifest.json selected](screenshots/06-firefox-manifest.png)
 
 **Option B — XPI file (same dialog only)**
 
-1. In the **same** Load Temporary Add-on dialog, you may select **`markdown-ext.xpi`** from the unzipped folder
+1. In the **same** Load Temporary Add-on dialog, you may select **`firefox-extension.xpi`** from the unzipped folder
 2. Do **not** install via `about:addons` — that path does not work for unsigned local extensions
 
 If files look grayed out, switch the format dropdown to **All Files** — Firefox often filters to `.xpi` only by default.
@@ -122,9 +123,9 @@ extracted_at: 2026-05-29T12:00:00.000Z
 | Issue | What to try |
 |-------|-------------|
 | **Load unpacked is disabled** (Chrome) | Enable Developer mode first |
-| **Extension won't load** | Select `markdown-ext/extension` (must contain `manifest.json` and `readability.min.js`) |
+| **Extension won't load** | Select `markdown-ext/chrome-extension` (must contain `manifest.json` and `readability.min.js`) |
 | **Firefox: files grayed out** | Set file picker to **All Files**, then pick `manifest.json` |
-| **Firefox: “appears to be corrupt”** | You used `about:addons` — use `about:debugging` → Load Temporary Add-on → `extension/manifest.json` instead |
+| **Firefox: “not been verified” or “corrupt”** | You used `about:addons` — use `about:debugging` → `chrome-extension/manifest.json` instead |
 | **Firefox: add-on gone after restart** | Expected for temporary installs — load again from `about:debugging` |
 | **No response from content script** | Refresh the tab, then convert again |
 | **Output is very long / noisy** | Normal on marketing homepages; open a specific article URL instead |

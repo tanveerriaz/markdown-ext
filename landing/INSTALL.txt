@@ -1,23 +1,29 @@
 Markdown Convert — quick install
 ================================
 
-Chrome / Edge / Brave
+WHAT'S IN THE ZIP
+-----------------
+chrome-extension/       → Chrome, Edge, Brave (Load unpacked)
+firefox-extension.xpi     → Firefox only (see below — not via Add-ons Manager)
+START-HERE.txt            → folder map
+
+CHROME / EDGE / BRAVE
 ---------------------
 1. Unzip this archive.
-2. Open chrome://extensions → enable Developer mode.
-3. Load unpacked → select the "extension" folder (contains manifest.json).
+2. chrome://extensions → Developer mode → Load unpacked
+3. Select the chrome-extension folder (contains manifest.json).
 
-Firefox
+FIREFOX
 -------
-IMPORTANT: Use about:debugging — NOT about:addons.
-Installing via about:addons (or double-clicking .xpi) shows "appears to be corrupt"
-on release Firefox. Unsigned extensions must load as temporary add-ons.
+Do NOT use about:addons or "Install Add-on From File".
+Unsigned extensions show "not been verified" or "appears to be corrupt"
+on that page. That is expected.
 
-1. Unzip this archive.
-2. Open about:debugging → This Firefox → Load Temporary Add-on.
-3. Set file picker to "All Files", then select extension/manifest.json
-   (recommended). Do not use about:addons → Install from file.
+1. Unzip this archive (or download firefox-extension.xpi from the site).
+2. about:debugging → This Firefox → Load Temporary Add-on
+3. All Files → chrome-extension/manifest.json
+   OR firefox-extension.xpi (same dialog only — not about:addons)
 
-Note: Firefox temporary add-ons are removed when you fully quit the browser.
+Temporary add-ons are removed when you fully quit Firefox.
 
 Full guide: https://github.com/tanveerriaz/markdown-ext/blob/main/docs/SETUP.md

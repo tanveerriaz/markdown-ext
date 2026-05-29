@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>about:debugging — Firefox (documentation mock)</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f9f9fb;
+        color: #15141a;
+      }
+      .sidebar {
+        width: 220px;
+        min-height: 420px;
+        background: #fff;
+        border-right: 1px solid #e0e0e6;
+        padding: 16px 0;
+        float: left;
+      }
+      .sidebar a {
+        display: block;
+        padding: 10px 20px;
+        color: #15141a;
+        text-decoration: none;
+        font-size: 14px;
+      }
+      .sidebar a.active {
+        background: #e7f2ff;
+        color: #0060df;
+        font-weight: 600;
+        border-right: 3px solid #0060df;
+      }
+      .main {
+        margin-left: 220px;
+        padding: 24px 32px;
+      }
+      h1 { font-size: 22px; font-weight: 600; margin: 0 0 8px; }
+      .sub { color: #5e606d; font-size: 14px; margin-bottom: 20px; }
+      .btn {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #0060df;
+        color: #fff;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        box-shadow: 0 0 0 3px rgba(0, 96, 223, 0.2);
+      }
+      .label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #0060df;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 12px;
+      }
+      .card {
+        margin-top: 24px;
+        padding: 16px;
+        background: #fff;
+        border: 1px solid #e0e0e6;
+        border-radius: 8px;
+        max-width: 480px;
+      }
+      .card h2 { margin: 0 0 4px; font-size: 15px; }
+      .card p { margin: 0; font-size: 13px; color: #5e606d; }
+    </style>
+  </head>
+  <body>
+    <nav class="sidebar">
+      <a href="#">Setup</a>
+      <a href="#" class="active">This Firefox</a>
+      <a href="#">This Nightly</a>
+    </nav>
+    <main class="main">
+      <p class="label">Firefox — Step 1</p>
+      <h1>Runtime / this Firefox</h1>
+      <p class="sub">Temporary Extensions (reload when you restart Firefox)</p>
+      <span class="btn">Load Temporary Add-on…</span>
+      <div class="card">
+        <h2>Markdown Convert</h2>
+        <p>1.2.1 · Convert any webpage to clean Markdown.</p>
+      </div>
+    </main>
+  </body>
+</html>

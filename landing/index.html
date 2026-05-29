@@ -189,7 +189,23 @@
         flex-wrap: wrap;
         gap: 12px;
         justify-content: center;
-        margin-bottom: 16px;
+        margin-bottom: 8px;
+      }
+
+      .cta-hints {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 24px;
+        justify-content: center;
+        margin: 0 auto 16px;
+        max-width: 520px;
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.4;
+      }
+
+      .cta-hints span {
+        white-space: nowrap;
       }
 
       .btn {
@@ -545,15 +561,6 @@
         font-weight: 600;
       }
 
-      .hero-xpi-note {
-        margin: 8px 0 0;
-        font-size: 13px;
-        color: var(--text-muted);
-        max-width: 420px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
       @media (max-width: 768px) {
         .section {
           padding: 48px 0;
@@ -670,14 +677,15 @@
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-              Download zip
+              Chrome extension
             </a>
             <a
               class="btn btn-secondary"
-              href="#firefox-setup"
-              title="Firefox install steps below"
+              href="./firefox-extension.xpi"
+              download
+              title="Install via about:debugging only — not about:addons"
             >
-              Firefox setup
+              Firefox extension
             </a>
             <a
               class="btn btn-secondary"
@@ -693,6 +701,10 @@
               View on GitHub
             </a>
           </div>
+          <p class="cta-hints content">
+            <span><strong>Chrome:</strong> unzip → <code>chrome-extension/</code> folder</span>
+            <span><strong>Firefox:</strong> use <code>about:debugging</code>, not Add-ons</span>
+          </p>
           <p class="version-note">v1.2.2 · Free · No account needed</p>
         </section>
 
@@ -729,7 +741,8 @@
         <section class="section" aria-labelledby="setup-heading">
           <h2 class="section-heading content" id="setup-heading">🛠️ Setup guide</h2>
           <p class="setup-intro content">
-            Pick your browser below. Download the zip once — it includes the <code>extension/</code> folder for Chrome and Edge.
+            Pick your browser below. The zip includes <code>chrome-extension/</code> and
+            <code>firefox-extension.xpi</code> — read <code>START-HERE.txt</code> after unzipping.
           </p>
           <nav class="setup-nav content" aria-label="Setup by browser">
             <a href="#chrome-setup">Chrome / Edge / Brave</a>
@@ -744,8 +757,8 @@
               <article class="setup-step">
                 <h3>1. Download and unzip</h3>
                 <p>
-                  Click <strong>Download zip</strong> above. Open <code>markdown-ext/extension/</code> — that folder
-                  contains <code>manifest.json</code>.
+                  Click <strong>Chrome extension</strong> above. Unzip and open the
+                  <code>chrome-extension/</code> folder (contains <code>manifest.json</code>).
                 </p>
                 <img
                   src="./images/setup/07-zip-contents.png"
@@ -769,7 +782,7 @@
               <article class="setup-step">
                 <h3>3. Load unpacked</h3>
                 <p>
-                  Click <strong>Load unpacked</strong> and select <code>markdown-ext/extension</code>.
+                  Click <strong>Load unpacked</strong> and select the <code>chrome-extension</code> folder.
                 </p>
                 <img
                   src="./images/setup/03-load-unpacked.png"
@@ -791,7 +804,7 @@
                 />
               </article>
               <p class="tip">
-                <strong>Tip:</strong> On some Chrome versions you can drag the <code>extension</code> folder onto
+                <strong>Tip:</strong> On some Chrome versions you can drag the <code>chrome-extension</code> folder onto
                 <code>chrome://extensions</code>.
               </p>
             </section>
@@ -800,14 +813,16 @@
               <h3 class="setup-browser-heading" id="firefox-setup-heading">Firefox</h3>
               <p class="setup-warning">
                 <strong>Use <code>about:debugging</code>, not <code>about:addons</code>.</strong>
-                Installing from the Add-ons page or double-clicking <code>.xpi</code> shows
-                “appears to be corrupt” on release Firefox. Load a temporary add-on from the debugging page only.
+                The Add-ons page shows “has not been verified” or “appears to be corrupt” for unsigned extensions.
+                Click <strong>Firefox extension</strong> above only to save the file — install it from
+                <code>about:debugging</code>, not by opening the Add-ons Manager.
               </p>
               <article class="setup-step">
                 <h3>1. Download and unzip</h3>
                 <p>
-                  Click <strong>Download zip</strong> above. You need <code>markdown-ext/extension/manifest.json</code>
-                  (the <code>.xpi</code> in the zip is optional — load it only from the same debugging dialog).
+                  Download <strong>Chrome extension</strong> (zip) or <strong>Firefox extension</strong> (.xpi).
+                  After unzipping, use <code>chrome-extension/manifest.json</code> or
+                  <code>firefox-extension.xpi</code> — only from the debugging dialog below.
                 </p>
                 <img
                   src="./images/setup/07-zip-contents.png"
@@ -834,8 +849,8 @@
               <article class="setup-step">
                 <h3>3. Select manifest.json</h3>
                 <p>
-                  Set the file picker to <strong>All Files</strong>, open <code>markdown-ext/extension/</code>, and
-                  select <code>manifest.json</code>.
+                  Set the file picker to <strong>All Files</strong>, open <code>chrome-extension/</code>, and
+                  select <code>manifest.json</code> (or pick <code>firefox-extension.xpi</code> from the zip root).
                 </p>
                 <img
                   src="./images/setup/06-firefox-manifest.png"
@@ -858,7 +873,7 @@
               </article>
               <p class="tip">
                 <strong>Tip:</strong> Grayed files? Use <strong>All Files</strong> in the picker.
-                “Corrupt” error? You opened <code>about:addons</code> — use <code>about:debugging</code> instead.
+                “Not been verified”? You opened <code>about:addons</code> — use <code>about:debugging</code> instead.
                 The add-on is removed when you fully quit Firefox.
               </p>
             </section>

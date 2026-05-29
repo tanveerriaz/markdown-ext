@@ -15,12 +15,13 @@ jobs:
       - name: Package Extension
         run: |
           cd extension
-          zip -r ../landing/markdown-ext.xpi . -x "*.DS_Store"
+          zip -r ../landing/firefox-extension.xpi . -x "*.DS_Store"
           cd ..
           mkdir -p dist/markdown-ext
-          cp -r extension dist/markdown-ext/
-          cp landing/markdown-ext.xpi dist/markdown-ext/
+          cp -r extension dist/markdown-ext/chrome-extension
+          cp landing/firefox-extension.xpi dist/markdown-ext/
           cp landing/INSTALL.txt dist/markdown-ext/
+          cp landing/START-HERE.txt dist/markdown-ext/
           cd dist && zip -r ../landing/markdown-ext.zip markdown-ext
 
       - name: Ensure Cloudflare Pages project exists

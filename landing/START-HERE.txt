@@ -1,0 +1,26 @@
+Markdown Convert — what's in this folder
+========================================
+
+markdown-ext/
+├── chrome-extension/       ← CHROME / EDGE / BRAVE
+│   └── (Load unpacked at chrome://extensions)
+├── firefox-extension.xpi   ← FIREFOX (optional file; same add-on)
+├── INSTALL.txt
+└── START-HERE.txt            ← you are here
+
+CHROME / EDGE / BRAVE
+  1. Open chrome://extensions
+  2. Enable Developer mode
+  3. Load unpacked → select the chrome-extension folder
+
+FIREFOX — read this carefully
+  Do NOT install via about:addons (Add-ons Manager).
+  Errors like "not been verified" or "appears to be corrupt" mean
+  you used the wrong page.
+
+  1. Open about:debugging (not about:addons)
+  2. This Firefox → Load Temporary Add-on
+  3. All Files → chrome-extension/manifest.json
+     OR pick firefox-extension.xpi from this folder (same dialog only)
+
+Full guide: https://github.com/tanveerriaz/markdown-ext/blob/main/docs/SETUP.md
