@@ -47,7 +47,7 @@ After you unzip `markdown-ext.zip`, you get a **`markdown-ext`** folder with:
 
 **Tip:** On some Chrome versions you can drag the `chrome-extension` folder onto the Extensions page.
 
-You should see **Markdown Convert** in the list, version **1.2.2** or newer.
+You should see **Markdown Convert** in the list, version **1.2.3** or newer.
 
 ### Step 4 — Convert a page
 
