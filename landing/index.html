@@ -480,6 +480,80 @@
         color: var(--accent-hover);
       }
 
+      .setup-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 40px;
+        max-width: 560px;
+        font-size: 15px;
+      }
+
+      .setup-nav a {
+        color: var(--accent);
+        font-weight: 600;
+        transition: color 0.2s ease;
+      }
+
+      .setup-nav a:hover {
+        color: var(--accent-hover);
+      }
+
+      .setup-nav-sep {
+        color: var(--text-muted);
+        user-select: none;
+      }
+
+      .setup-browser {
+        margin-top: 48px;
+        padding-top: 48px;
+        border-top: 1px solid var(--border);
+      }
+
+      .setup-browser:first-of-type {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+      }
+
+      #chrome-setup,
+      #firefox-setup {
+        scroll-margin-top: 72px;
+      }
+
+      .setup-browser-heading {
+        margin: 0 0 24px;
+        font-size: 20px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .setup-warning {
+        margin: 0 0 24px;
+        padding: 16px 20px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--text);
+        background: #fff8f0;
+        border: 1px solid #f0d4b8;
+        border-radius: var(--radius-sm);
+      }
+
+      .setup-warning strong {
+        font-weight: 600;
+      }
+
+      .hero-xpi-note {
+        margin: 8px 0 0;
+        font-size: 13px;
+        color: var(--text-muted);
+        max-width: 420px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
       @media (max-width: 768px) {
         .section {
           padding: 48px 0;
@@ -598,8 +672,12 @@
               </svg>
               Download zip
             </a>
-            <a class="btn btn-secondary" href="./markdown-ext.xpi" download title="Firefox temporary install">
-              Firefox .xpi
+            <a
+              class="btn btn-secondary"
+              href="#firefox-setup"
+              title="Firefox install steps below"
+            >
+              Firefox setup
             </a>
             <a
               class="btn btn-secondary"
@@ -615,7 +693,7 @@
               View on GitHub
             </a>
           </div>
-          <p class="version-note">v1.2.1 · Free · No account needed</p>
+          <p class="version-note">v1.2.2 · Free · No account needed</p>
         </section>
 
         <section class="section" aria-labelledby="features-heading">
@@ -651,95 +729,139 @@
         <section class="section" aria-labelledby="setup-heading">
           <h2 class="section-heading content" id="setup-heading">🛠️ Setup guide</h2>
           <p class="setup-intro content">
-            Install in Chrome, Edge, or Firefox. The zip includes <code>extension/</code> and
-            <code>markdown-ext.xpi</code>. Full guide on
-            <a href="https://github.com/tanveerriaz/markdown-ext/blob/main/docs/SETUP.md" target="_blank" rel="noopener noreferrer">GitHub</a>.
+            Pick your browser below. Download the zip once — it includes the <code>extension/</code> folder for Chrome and Edge.
           </p>
+          <nav class="setup-nav content" aria-label="Setup by browser">
+            <a href="#chrome-setup">Chrome / Edge / Brave</a>
+            <span class="setup-nav-sep" aria-hidden="true">·</span>
+            <a href="#firefox-setup">Firefox</a>
+            <span class="setup-nav-sep" aria-hidden="true">·</span>
+            <a href="https://github.com/tanveerriaz/markdown-ext/blob/main/docs/SETUP.md" target="_blank" rel="noopener noreferrer">Full guide</a>
+          </nav>
           <div class="setup-guide">
-            <article class="setup-step">
-              <h3>1. Download and unzip</h3>
-              <p>
-                Click <strong>Download zip</strong> above. Inside <code>markdown-ext/</code> you’ll find
-                <code>extension/</code> (Chrome) and <code>markdown-ext.xpi</code> (Firefox).
+            <section class="setup-browser" id="chrome-setup" aria-labelledby="chrome-setup-heading">
+              <h3 class="setup-browser-heading" id="chrome-setup-heading">Chrome / Edge / Brave</h3>
+              <article class="setup-step">
+                <h3>1. Download and unzip</h3>
+                <p>
+                  Click <strong>Download zip</strong> above. Open <code>markdown-ext/extension/</code> — that folder
+                  contains <code>manifest.json</code>.
+                </p>
+                <img
+                  src="./images/setup/07-zip-contents.png"
+                  alt="Unzipped markdown-ext folder with extension subfolder"
+                  width="720"
+                  height="405"
+                  loading="lazy"
+                />
+              </article>
+              <article class="setup-step">
+                <h3>2. Enable Developer mode</h3>
+                <p>Open <code>chrome://extensions</code> and turn on Developer mode (top-right).</p>
+                <img
+                  src="./images/setup/02-developer-mode.png"
+                  alt="Chrome Extensions page with Developer mode enabled"
+                  width="720"
+                  height="405"
+                  loading="lazy"
+                />
+              </article>
+              <article class="setup-step">
+                <h3>3. Load unpacked</h3>
+                <p>
+                  Click <strong>Load unpacked</strong> and select <code>markdown-ext/extension</code>.
+                </p>
+                <img
+                  src="./images/setup/03-load-unpacked.png"
+                  alt="Chrome Extensions page highlighting Load unpacked button"
+                  width="720"
+                  height="405"
+                  loading="lazy"
+                />
+              </article>
+              <article class="setup-step">
+                <h3>4. Convert any page</h3>
+                <p>Visit a page, open the extension, click Convert, then copy or download Markdown.</p>
+                <img
+                  src="./images/setup/04-convert-popup.png"
+                  alt="Markdown Convert popup showing YAML frontmatter and preview"
+                  width="720"
+                  height="405"
+                  loading="lazy"
+                />
+              </article>
+              <p class="tip">
+                <strong>Tip:</strong> On some Chrome versions you can drag the <code>extension</code> folder onto
+                <code>chrome://extensions</code>.
               </p>
-              <img
-                src="./images/setup/07-zip-contents.png"
-                alt="Unzipped markdown-ext folder with extension subfolder and xpi file"
-                width="720"
-                height="405"
-                loading="lazy"
-              />
-            </article>
-            <article class="setup-step">
-              <h3>2. Chrome — enable Developer mode</h3>
-              <p>Open <code>chrome://extensions</code> and turn on Developer mode (top-right).</p>
-              <img
-                src="./images/setup/02-developer-mode.png"
-                alt="Chrome Extensions page with Developer mode enabled"
-                width="720"
-                height="405"
-                loading="lazy"
-              />
-            </article>
-            <article class="setup-step">
-              <h3>3. Chrome — load unpacked</h3>
-              <p>
-                Click <strong>Load unpacked</strong> and select <code>markdown-ext/extension</code>
-                (contains <code>manifest.json</code>).
-              </p>
-              <img
-                src="./images/setup/03-load-unpacked.png"
-                alt="Chrome Extensions page highlighting Load unpacked button"
-                width="720"
-                height="405"
-                loading="lazy"
-              />
-            </article>
-            <article class="setup-step">
-              <h3>4. Firefox — load temporary add-on</h3>
-              <p>
-                Open <code>about:debugging</code> → <strong>This Firefox</strong> →
-                <strong>Load Temporary Add-on…</strong>. Set the file picker to <strong>All Files</strong>,
-                then choose <code>extension/manifest.json</code> or download <strong>Firefox .xpi</strong> above.
-              </p>
-              <img
-                src="./images/setup/05-firefox-debugging.png"
-                alt="Firefox about:debugging page with Load Temporary Add-on button"
-                width="720"
-                height="405"
-                loading="lazy"
-              />
-              <img
-                src="./images/setup/06-firefox-manifest.png"
-                alt="File picker with All Files format and manifest.json selected"
-                width="720"
-                height="405"
-                loading="lazy"
-                style="margin-top: 16px"
-              />
-            </article>
-            <article class="setup-step">
-              <h3>5. Convert any page</h3>
-              <p>Visit a page, open the extension, click Convert, then copy or download Markdown.</p>
-              <img
-                src="./images/setup/04-convert-popup.png"
-                alt="Markdown Convert popup showing YAML frontmatter and preview"
-                width="720"
-                height="405"
-                loading="lazy"
-              />
-            </article>
-          </div>
-        </section>
+            </section>
 
-        <section class="section" style="padding-top: 0">
-          <div class="content">
-            <p class="tip">
-              <strong>💡 Chrome:</strong> Drag the <code>extension</code> folder onto
-              <code>chrome://extensions</code> on some versions.
-              <strong>Firefox:</strong> Grayed files? Switch the picker to <strong>All Files</strong>, then pick
-              <code>manifest.json</code> or the <code>.xpi</code>.
-            </p>
+            <section class="setup-browser" id="firefox-setup" aria-labelledby="firefox-setup-heading">
+              <h3 class="setup-browser-heading" id="firefox-setup-heading">Firefox</h3>
+              <p class="setup-warning">
+                <strong>Use <code>about:debugging</code>, not <code>about:addons</code>.</strong>
+                Installing from the Add-ons page or double-clicking <code>.xpi</code> shows
+                “appears to be corrupt” on release Firefox. Load a temporary add-on from the debugging page only.
+              </p>
+              <article class="setup-step">
+                <h3>1. Download and unzip</h3>
+                <p>
+                  Click <strong>Download zip</strong> above. You need <code>markdown-ext/extension/manifest.json</code>
+                  (the <code>.xpi</code> in the zip is optional — load it only from the same debugging dialog).
+                </p>
+                <img
+                  src="./images/setup/07-zip-contents.png"
+                  alt="Unzipped markdown-ext folder with extension subfolder"
+                  width="720"
+                  height="405"
+                  loading="lazy"
+                />
+              </article>
+              <article class="setup-step">
+                <h3>2. Open about:debugging</h3>
+                <p>
+                  In the address bar, open <code>about:debugging</code> → <strong>This Firefox</strong> →
+                  <strong>Load Temporary Add-on…</strong>
+                </p>
+                <img
+                  src="./images/setup/05-firefox-debugging.png"
+                  alt="Firefox about:debugging page with Load Temporary Add-on button"
+                  width="720"
+                  height="405"
+                  loading="lazy"
+                />
+              </article>
+              <article class="setup-step">
+                <h3>3. Select manifest.json</h3>
+                <p>
+                  Set the file picker to <strong>All Files</strong>, open <code>markdown-ext/extension/</code>, and
+                  select <code>manifest.json</code>.
+                </p>
+                <img
+                  src="./images/setup/06-firefox-manifest.png"
+                  alt="File picker with All Files format and manifest.json selected"
+                  width="720"
+                  height="405"
+                  loading="lazy"
+                />
+              </article>
+              <article class="setup-step">
+                <h3>4. Convert any page</h3>
+                <p>Visit a page, open the extension, click Convert, then copy or download Markdown.</p>
+                <img
+                  src="./images/setup/04-convert-popup.png"
+                  alt="Markdown Convert popup showing YAML frontmatter and preview"
+                  width="720"
+                  height="405"
+                  loading="lazy"
+                />
+              </article>
+              <p class="tip">
+                <strong>Tip:</strong> Grayed files? Use <strong>All Files</strong> in the picker.
+                “Corrupt” error? You opened <code>about:addons</code> — use <code>about:debugging</code> instead.
+                The add-on is removed when you fully quit Firefox.
+              </p>
+            </section>
           </div>
         </section>
       </main>

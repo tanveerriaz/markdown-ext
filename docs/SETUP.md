@@ -9,7 +9,7 @@ After you unzip `markdown-ext.zip`, you get a **`markdown-ext`** folder with:
 | Item | Use |
 |------|-----|
 | **`extension/`** | Chrome / Edge / Brave — Load unpacked |
-| **`markdown-ext.xpi`** | Firefox — Load Temporary Add-on (optional one-file install) |
+| **`markdown-ext.xpi`** | Included in zip — only load via `about:debugging` (not `about:addons`) |
 | **`INSTALL.txt`** | Quick reference |
 
 ![Unzipped folder showing extension subfolder and markdown-ext.xpi](screenshots/07-zip-contents.png)
@@ -46,7 +46,7 @@ After you unzip `markdown-ext.zip`, you get a **`markdown-ext`** folder with:
 
 **Tip:** On some Chrome versions you can drag the `extension` folder onto the Extensions page.
 
-You should see **Markdown Convert** in the list, version **1.2.1** or newer.
+You should see **Markdown Convert** in the list, version **1.2.2** or newer.
 
 ### Step 4 — Convert a page
 
@@ -62,6 +62,8 @@ You should see **Markdown Convert** in the list, version **1.2.1** or newer.
 ## Firefox (macOS / Windows / Linux)
 
 Firefox does not use “Load unpacked” the same way. Install a **temporary** add-on (removed when you fully quit Firefox).
+
+**Important:** Use **`about:debugging`**, not **`about:addons`**. Installing from the Add-ons page (gear → *Install Add-on From File*, or double-clicking `.xpi`) shows *“appears to be corrupt”* on release Firefox because unsigned extensions are not allowed there.
 
 ### Step 1 — Download
 
@@ -85,9 +87,10 @@ Same as Chrome: download and unzip from [markdown-ext.pages.dev](https://markdow
 
 ![macOS file picker: All Files and manifest.json selected](screenshots/06-firefox-manifest.png)
 
-**Option B — XPI file**
+**Option B — XPI file (same dialog only)**
 
-1. In the same dialog, select **`markdown-ext.xpi`** from the unzipped folder (no need to open the `extension` subfolder)
+1. In the **same** Load Temporary Add-on dialog, you may select **`markdown-ext.xpi`** from the unzipped folder
+2. Do **not** install via `about:addons` — that path does not work for unsigned local extensions
 
 If files look grayed out, switch the format dropdown to **All Files** — Firefox often filters to `.xpi` only by default.
 
@@ -120,7 +123,8 @@ extracted_at: 2026-05-29T12:00:00.000Z
 |-------|-------------|
 | **Load unpacked is disabled** (Chrome) | Enable Developer mode first |
 | **Extension won't load** | Select `markdown-ext/extension` (must contain `manifest.json` and `readability.min.js`) |
-| **Firefox: files grayed out** | Set file picker to **All Files**, then pick `manifest.json` or `markdown-ext.xpi` |
+| **Firefox: files grayed out** | Set file picker to **All Files**, then pick `manifest.json` |
+| **Firefox: “appears to be corrupt”** | You used `about:addons` — use `about:debugging` → Load Temporary Add-on → `extension/manifest.json` instead |
 | **Firefox: add-on gone after restart** | Expected for temporary installs — load again from `about:debugging` |
 | **No response from content script** | Refresh the tab, then convert again |
 | **Output is very long / noisy** | Normal on marketing homepages; open a specific article URL instead |

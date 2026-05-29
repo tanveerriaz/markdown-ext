@@ -1,8 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Markdown Convert",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Convert any webpage to clean Markdown.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "markdown-convert@tanveerriaz.github",
+      "strict_min_version": "109.0"
+    }
+  },
   "action": {
     "default_title": "Markdown Convert",
     "default_popup": "popup.html"

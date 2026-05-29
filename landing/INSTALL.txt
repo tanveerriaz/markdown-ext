@@ -9,11 +9,14 @@ Chrome / Edge / Brave
 
 Firefox
 -------
+IMPORTANT: Use about:debugging — NOT about:addons.
+Installing via about:addons (or double-clicking .xpi) shows "appears to be corrupt"
+on release Firefox. Unsigned extensions must load as temporary add-ons.
+
 1. Unzip this archive.
 2. Open about:debugging → This Firefox → Load Temporary Add-on.
-3. Either:
-   - Select extension/manifest.json (set file picker to "All Files"), OR
-   - Select markdown-ext.xpi from this folder.
+3. Set file picker to "All Files", then select extension/manifest.json
+   (recommended). Do not use about:addons → Install from file.
 
 Note: Firefox temporary add-ons are removed when you fully quit the browser.
 
