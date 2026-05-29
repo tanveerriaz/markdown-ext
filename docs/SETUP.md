@@ -69,6 +69,7 @@ extracted_at: 2026-05-29T12:00:00.000Z
 | **Extension won't load** | Select the inner `extension` folder (must contain `manifest.json`) |
 | **No response from content script** | Refresh the tab, then convert again |
 | **Output is very long / noisy** | Normal on marketing homepages; open a specific article URL instead |
+| **YouTube channel shows only header, no videos** | Scroll down the channel page to load videos, then convert again (v1.2.1+) |
 | **"No readable content found"** | Page may be empty, login-only, or a pure app shell |
 
 ## Updating
