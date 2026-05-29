@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown Convert</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="hero">
+        <div class="badge">Chrome / Firefox Extension</div>
+        <h1>Markdown Convert</h1>
+        <p class="sub">Convert any webpage into clean, copyable Markdown in one click.</p>
+        <div class="ctaRow">
+          <a class="btn primary" href="./markdown-ext.zip" download>Download ZIP</a>
+          <a class="btn" href="https://github.com/tanveerriaz/markdown-ext">View on GitHub</a>
+        </div>
+      </header>
+
+      <section class="grid">
+        <div class="card">
+          <h2>What it does</h2>
+          <p>
+            Click <strong>Convert</strong> to extract the page content, strip
+            common clutter (nav/footer/scripts/styles), and generate a Markdown
+            preview you can copy or download.
+          </p>
+        </div>
+        <div class="card">
+          <h2>Install (Developer mode)</h2>
+          <ol class="steps">
+            <li>Download <code>markdown-ext.zip</code> and unzip it.</li>
+            <li>
+              Open <code>chrome://extensions</code> and enable
+              <strong>Developer mode</strong>.
+            </li>
+            <li>
+              Click <strong>Load unpacked</strong> and select the
+              <code>extension/</code> folder.
+            </li>
+          </ol>
+          <p class="hint">
+            Tip: On some Chrome versions you can also drag the unzipped folder
+            into <code>chrome://extensions</code>.
+          </p>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>© <span id="year"></span> Markdown Convert</span>
+        <span class="sep">·</span>
+        <a class="link" href="https://github.com/tanveerriaz/markdown-ext">GitHub</a>
+      </footer>
+    </main>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
