@@ -13,10 +13,13 @@
       property="og:description"
       content="Convert any webpage into clean, copyable Markdown in one click."
     />
+    <meta property="og:url" content="https://markdown-ext.pages.dev/" />
+    <meta property="og:image" content="https://markdown-ext.pages.dev/images/og.png" />
+    <meta property="og:type" content="website" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
     <style>
@@ -33,7 +36,7 @@
         --bg-card: #ffffff;
         --text: #2a3531;
         --text-secondary: #3d4f4a;
-        --text-muted: #5a6d66;
+        --text-muted: #4a5c56;
         --accent: var(--muted-teal);
         --accent-light: var(--lime-cream);
         --accent-hover: #6f8a80;
@@ -63,6 +66,38 @@
 
       html {
         scroll-behavior: smooth;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      .skip-link {
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        z-index: 200;
+        padding: 10px 16px;
+        font-weight: 600;
+        background: var(--bg-card);
+        color: var(--text);
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-md);
+      }
+
+      .skip-link:focus {
+        left: 16px;
+        top: 8px;
       }
 
       body {
@@ -247,42 +282,51 @@
         margin-bottom: 8px;
       }
 
-      .cta-hints {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 10px;
-        justify-content: center;
-        margin: 0 auto 16px;
+      .hero-install-hint {
+        margin: 0 auto 12px;
         max-width: 560px;
-        font-size: 13px;
+        font-size: 14px;
         color: var(--text-secondary);
-        line-height: 1.45;
+        line-height: 1.5;
       }
 
-      .cta-hint {
-        display: flex;
-        align-items: flex-start;
-        gap: 8px;
-        padding: 10px 12px;
-        text-align: left;
-        background: var(--bg-elevated);
+      .hero-install-hint code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.9em;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: var(--lime-cream);
         border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
       }
 
-      .cta-hint svg {
-        width: 18px;
-        height: 18px;
-        flex-shrink: 0;
-        margin-top: 1px;
+      .hero-secondary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 20px;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 12px;
+        font-size: 14px;
       }
 
-      .cta-hint-chrome svg {
-        color: var(--chrome);
+      .hero-github {
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-decoration: underline;
+        text-underline-offset: 3px;
       }
 
-      .cta-hint-firefox svg {
-        color: var(--firefox);
+      .hero-github:hover {
+        color: var(--text);
+      }
+
+      .hero-setup-link {
+        font-weight: 600;
+        color: var(--accent-hover);
+      }
+
+      .hero-setup-link:hover {
+        color: var(--text);
       }
 
       .btn {
@@ -406,10 +450,21 @@
         box-shadow: var(--shadow-md);
       }
 
-      .feature-emoji {
-        font-size: 32px;
-        line-height: 1;
+      .feature-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
         margin-bottom: 16px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #7c3aed, #22c55e);
+        color: #fff;
+      }
+
+      .feature-icon svg {
+        width: 22px;
+        height: 22px;
       }
 
       .feature-card h3 {
@@ -645,7 +700,13 @@
         margin: 0;
       }
 
-      .setup-step img {
+      .setup-step picture,
+      .setup-after-install picture {
+        display: block;
+      }
+
+      .setup-step img,
+      .setup-after-install img {
         display: block;
         width: 100%;
         height: auto;
@@ -774,11 +835,43 @@
         height: 28px;
       }
 
-      .setup-warning {
+      .setup-browser-details {
+        margin-top: 48px;
+      }
+
+      .setup-browser-details > summary {
+        list-style: none;
+        cursor: pointer;
+      }
+
+      .setup-browser-details > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .setup-browser-details > summary.setup-browser-heading {
         display: flex;
-        gap: 12px;
-        align-items: flex-start;
-        margin: 0 0 28px;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .setup-browser-details > summary.setup-browser-heading::after {
+        content: "Show steps";
+        margin-left: auto;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--firefox-hover);
+      }
+
+      .setup-browser-details[open] > summary.setup-browser-heading::after {
+        content: "Hide steps";
+      }
+
+      .setup-browser-details .setup-browser-inner {
+        padding-top: 8px;
+      }
+
+      .setup-warning {
+        margin: 0 0 24px;
         padding: 16px 18px;
         font-size: 14px;
         line-height: 1.55;
@@ -788,17 +881,55 @@
         border-radius: var(--radius-sm);
       }
 
-      .setup-warning svg {
-        width: 22px;
-        height: 22px;
-        flex-shrink: 0;
-        color: var(--warn-border);
-        margin-top: 2px;
-      }
-
-      .setup-warning strong {
+      .setup-warning-title {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin: 0 0 10px;
+        font-size: 15px;
         font-weight: 700;
         color: var(--warn-text);
+      }
+
+      .setup-warning-title svg {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        color: var(--warn-border);
+      }
+
+      .setup-warning-list {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      .setup-warning-list li {
+        margin-bottom: 6px;
+      }
+
+      .setup-warning-list li:last-child {
+        margin-bottom: 0;
+      }
+
+      .setup-after-install {
+        margin-top: 40px;
+        padding: 28px 28px 24px;
+        border-radius: var(--radius);
+        border: 2px dashed var(--border-strong);
+        background: var(--bg-card);
+      }
+
+      .setup-after-install h3 {
+        margin: 0 0 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .setup-after-install p {
+        margin: 0 0 16px;
+        font-size: 15px;
+        color: var(--text-secondary);
+        line-height: 1.55;
       }
 
       .zip-tree {
@@ -953,6 +1084,7 @@
     </style>
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <!--
       CUSTOMIZE (clone for a new tool in ~5 min):
       - :root colors (optional)
@@ -987,7 +1119,7 @@
     </header>
 
     <div class="page">
-      <main>
+      <main id="main">
         <section class="hero content">
           <div class="hero-logo" aria-hidden="true">
             <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1026,7 +1158,7 @@
           <div class="cta-row">
             <a class="btn btn-chrome" href="./markdown-ext.zip" download>
               <span class="btn-icon" aria-hidden="true">
-                <img class="brand-icon brand-icon--sm" src="./images/brands/google-chrome.svg" alt="" width="20" height="20" />
+                <img class="brand-icon brand-icon--sm" src="./images/brands/google-chrome.svg" alt="" width="20" height="20" decoding="async" />
               </span>
               Chrome extension
             </a>
@@ -1037,50 +1169,38 @@
               title="Install via about:debugging only — not about:addons"
             >
               <span class="btn-icon" aria-hidden="true">
-                <img class="brand-icon brand-icon--sm" src="./images/brands/firefox.svg" alt="" width="20" height="20" />
+                <img class="brand-icon brand-icon--sm" src="./images/brands/firefox.svg" alt="" width="20" height="20" decoding="async" />
               </span>
               Firefox extension
             </a>
+          </div>
+          <p class="hero-install-hint content">
+            <strong>Chrome:</strong> load unpacked · <strong>Firefox:</strong> only
+            <code>about:debugging</code> (not Add-ons)
+          </p>
+          <div class="hero-secondary content">
             <a
-              class="btn btn-ghost"
+              class="hero-github"
               href="https://github.com/tanveerriaz/markdown-ext"
               target="_blank"
               rel="noopener noreferrer"
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path
-                  d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"
-                />
-              </svg>
-              View on GitHub
-            </a>
-          </div>
-          <div class="cta-hints content">
-            <div class="cta-hint cta-hint-chrome">
-              <img class="brand-icon brand-icon--sm" src="./images/brands/google-chrome.svg" alt="" width="20" height="20" aria-hidden="true" />
-              <span><strong>Chrome:</strong> unzip → load <code>chrome-extension/</code> at <code>chrome://extensions</code></span>
-            </div>
-            <div class="cta-hint cta-hint-firefox">
-              <img class="brand-icon brand-icon--sm" src="./images/brands/firefox.svg" alt="" width="20" height="20" aria-hidden="true" />
-              <span><strong>Firefox:</strong> only <code>about:debugging</code> — not the Add-ons page</span>
-            </div>
+            >View on GitHub</a>
+            <a class="hero-setup-link" href="#setup-heading">Setup guide ↓</a>
           </div>
           <p class="version-note">v1.2.5 · Free · No account needed</p>
         </section>
 
         <section class="section section-features" aria-labelledby="features-heading">
-          <h2 class="section-heading content" id="features-heading">⚡ What it does</h2>
+          <h2 class="section-heading content" id="features-heading">What it does</h2>
           <div class="features-grid">
             <article class="feature-card">
-              <div class="feature-emoji" aria-hidden="true">📋</div>
-              <h3>One-Click Convert</h3>
-              <p>
-                Click the extension icon and get clean Markdown instantly. No config,
-                no sign-up, no fuss.
-              </p>
-            </article>
-            <article class="feature-card">
-              <div class="feature-emoji" aria-hidden="true">🧹</div>
+              <div class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/>
+                  <path d="M5 19l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3z"/>
+                  <path d="M19 13l.5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5.5-1.5z"/>
+                </svg>
+              </div>
               <h3>Smart Cleanup</h3>
               <p>
                 Strips navigation, cookie banners, and tracking noise. Agent-ready output
@@ -1088,7 +1208,26 @@
               </p>
             </article>
             <article class="feature-card">
-              <div class="feature-emoji" aria-hidden="true">📥</div>
+              <div class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+              </div>
+              <h3>One-Click Convert</h3>
+              <p>
+                Click the extension icon and get clean Markdown instantly. No config,
+                no sign-up, no fuss.
+              </p>
+            </article>
+            <article class="feature-card">
+              <div class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+              </div>
               <h3>Copy or Download</h3>
               <p>
                 Preview your Markdown, copy it to clipboard, or download as a .md file.
@@ -1099,7 +1238,7 @@
         </section>
 
         <section class="section" aria-labelledby="setup-heading">
-          <h2 class="section-heading content" id="setup-heading">🛠️ Setup guide</h2>
+          <h2 class="section-heading content" id="setup-heading">Setup guide</h2>
           <p class="setup-intro content">
             Pick your browser below. The zip includes <code>chrome-extension/</code> and
             <code>firefox-extension.xpi</code> — read <code>START-HERE.txt</code> after unzipping.
@@ -1137,20 +1276,25 @@
                 <img class="brand-icon brand-icon--md" src="./images/brands/google-chrome.svg" alt="" width="28" height="28" aria-hidden="true" />
                 Chrome / Edge / Brave
               </h3>
-              <article class="setup-step">
+              <article class="setup-step" id="chrome-step-1">
                 <h3><span class="step-num">1</span> Download and unzip</h3>
                 <p>
                   Click <strong>Chrome extension</strong> above. Unzip and open the
                   <code>chrome-extension/</code> folder (contains <code>manifest.json</code>).
                 </p>
                 <figure>
-                  <img
-                    src="./images/setup/07-zip-contents.png"
-                    alt="Unzipped markdown-ext folder with chrome-extension folder highlighted"
-                    width="720"
-                    height="405"
-                    loading="lazy"
-                  />
+                  <picture>
+                    <source type="image/avif" srcset="./images/setup/07-zip-contents.avif" />
+                    <source type="image/webp" srcset="./images/setup/07-zip-contents.webp" />
+                    <img
+                      src="./images/setup/07-zip-contents.png"
+                      alt="Unzipped markdown-ext folder with chrome-extension folder highlighted"
+                      width="720"
+                      height="405"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </picture>
                   <figcaption>Open the blue <strong>chrome-extension</strong> folder — not the .xpi file.</figcaption>
                 </figure>
               </article>
@@ -1158,13 +1302,18 @@
                 <h3><span class="step-num">2</span> Enable Developer mode</h3>
                 <p>Open <code>chrome://extensions</code> and turn on Developer mode (top-right).</p>
                 <figure>
-                  <img
-                    src="./images/setup/02-developer-mode.png"
-                    alt="Chrome Extensions page with Developer mode enabled"
-                    width="720"
-                    height="405"
-                    loading="lazy"
-                  />
+                  <picture>
+                    <source type="image/avif" srcset="./images/setup/02-developer-mode.avif" />
+                    <source type="image/webp" srcset="./images/setup/02-developer-mode.webp" />
+                    <img
+                      src="./images/setup/02-developer-mode.png"
+                      alt="Chrome Extensions page with Developer mode enabled"
+                      width="720"
+                      height="405"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </picture>
                   <figcaption>Developer mode toggle — top right of the Extensions page.</figcaption>
                 </figure>
               </article>
@@ -1174,29 +1323,27 @@
                   Click <strong>Load unpacked</strong> and select the <code>chrome-extension</code> folder.
                 </p>
                 <figure>
-                  <img
-                    src="./images/setup/03-load-unpacked.png"
-                    alt="Chrome Extensions page highlighting Load unpacked button"
-                    width="720"
-                    height="405"
-                    loading="lazy"
-                  />
+                  <picture>
+                    <source type="image/avif" srcset="./images/setup/03-load-unpacked.avif" />
+                    <source type="image/webp" srcset="./images/setup/03-load-unpacked.webp" />
+                    <img
+                      src="./images/setup/03-load-unpacked.png"
+                      alt="Chrome Extensions page highlighting Load unpacked button"
+                      width="720"
+                      height="405"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </picture>
                   <figcaption>Select the folder that contains <code>manifest.json</code>.</figcaption>
                 </figure>
               </article>
               <article class="setup-step">
                 <h3><span class="step-num">4</span> Convert any page</h3>
-                <p>Visit a page, open the extension, click Convert, then copy or download Markdown.</p>
-                <figure>
-                  <img
-                    src="./images/setup/04-convert-popup.png"
-                    alt="Markdown Convert popup showing YAML frontmatter and preview"
-                    width="720"
-                    height="405"
-                    loading="lazy"
-                  />
-                  <figcaption>Extension popup with preview and copy/download actions.</figcaption>
-                </figure>
+                <p>
+                  Visit a page, open the extension, click Convert, then copy or download Markdown.
+                  See <a href="#after-install">After install</a> for a preview of the popup.
+                </p>
               </article>
               <p class="tip tip-chrome">
                 <strong>Tip:</strong> On some Chrome versions you can drag the <code>chrome-extension</code> folder onto
@@ -1204,93 +1351,109 @@
               </p>
             </section>
 
-            <section class="setup-browser setup-browser-firefox" id="firefox-setup" aria-labelledby="firefox-setup-heading">
-              <h3 class="setup-browser-heading" id="firefox-setup-heading">
-                <img class="brand-icon brand-icon--md" src="./images/brands/firefox.svg" alt="" width="28" height="28" aria-hidden="true" />
+            <details class="setup-browser setup-browser-firefox setup-browser-details" id="firefox-setup">
+              <summary class="setup-browser-heading" id="firefox-setup-heading">
+                <img class="brand-icon brand-icon--md" src="./images/brands/firefox.svg" alt="" width="28" height="28" aria-hidden="true" decoding="async" />
                 Firefox
-              </h3>
-              <p class="setup-warning">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                </svg>
-                <span>
-                  <strong>Use <code>about:debugging</code>, not <code>about:addons</code>.</strong>
-                  The Add-ons page shows “has not been verified” or “appears to be corrupt” for unsigned extensions.
-                  Click <strong>Firefox extension</strong> above only to save the file — install it from
-                  <code>about:debugging</code>, not by opening the Add-ons Manager.
-                </span>
-              </p>
-              <article class="setup-step">
-                <h3><span class="step-num">1</span> Download and unzip</h3>
-                <p>
-                  Download <strong>Chrome extension</strong> (zip) or <strong>Firefox extension</strong> (.xpi).
-                  After unzipping, use <code>chrome-extension/manifest.json</code> or
-                  <code>firefox-extension.xpi</code> — only from the debugging dialog below.
+              </summary>
+              <div class="setup-browser-inner">
+                <div class="setup-warning" role="note">
+                  <p class="setup-warning-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    </svg>
+                    Install via about:debugging only
+                  </p>
+                  <ul class="setup-warning-list">
+                    <li>Use <code>about:debugging</code>, not <code>about:addons</code> (unsigned extensions show “corrupt” there).</li>
+                    <li>Download the <strong>Firefox extension</strong> button above only to save the file — load it from the debugging dialog.</li>
+                    <li>In the file picker, choose <strong>All Files</strong>, then <code>chrome-extension/manifest.json</code> or <code>firefox-extension.xpi</code>.</li>
+                  </ul>
+                </div>
+                <article class="setup-step">
+                  <h3><span class="step-num">1</span> Download and unzip</h3>
+                  <p>
+                    Same zip as Chrome — see <a href="#chrome-step-1">Chrome step 1</a>. You need
+                    <code>chrome-extension/manifest.json</code> or <code>firefox-extension.xpi</code> from the unzipped folder.
+                  </p>
+                </article>
+                <article class="setup-step">
+                  <h3><span class="step-num">2</span> Open about:debugging</h3>
+                  <p>
+                    In the address bar, open <code>about:debugging</code> → <strong>This Firefox</strong> →
+                    <strong>Load Temporary Add-on…</strong>
+                  </p>
+                  <figure>
+                    <picture>
+                      <source type="image/avif" srcset="./images/setup/05-firefox-debugging.avif" />
+                      <source type="image/webp" srcset="./images/setup/05-firefox-debugging.webp" />
+                      <img
+                        src="./images/setup/05-firefox-debugging.png"
+                        alt="Firefox about:debugging page with Load Temporary Add-on button"
+                        width="720"
+                        height="405"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </picture>
+                    <figcaption>Type <code>about:debugging</code> in the address bar — not <code>about:addons</code>.</figcaption>
+                  </figure>
+                </article>
+                <article class="setup-step">
+                  <h3><span class="step-num">3</span> Select manifest.json</h3>
+                  <p>
+                    Set the file picker to <strong>All Files</strong>, open <code>chrome-extension/</code>, and
+                    select <code>manifest.json</code> (or pick <code>firefox-extension.xpi</code> from the zip root).
+                  </p>
+                  <figure>
+                    <picture>
+                      <source type="image/avif" srcset="./images/setup/06-firefox-manifest.avif" />
+                      <source type="image/webp" srcset="./images/setup/06-firefox-manifest.webp" />
+                      <img
+                        src="./images/setup/06-firefox-manifest.png"
+                        alt="File picker with All Files format and manifest.json selected"
+                        width="720"
+                        height="405"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </picture>
+                    <figcaption>All Files → <code>manifest.json</code> inside <code>chrome-extension/</code>.</figcaption>
+                  </figure>
+                </article>
+                <article class="setup-step">
+                  <h3><span class="step-num">4</span> Convert any page</h3>
+                  <p>
+                    Visit a page, open the extension, click Convert, then copy or download Markdown.
+                    See <a href="#after-install">After install</a> for the popup preview.
+                  </p>
+                </article>
+                <p class="tip tip-firefox">
+                  <strong>Tip:</strong> Grayed files? Use <strong>All Files</strong> in the picker.
+                  “Not been verified”? You opened <code>about:addons</code> — use <code>about:debugging</code> instead.
+                  The add-on is removed when you fully quit Firefox.
                 </p>
-                <figure>
-                  <img
-                    src="./images/setup/07-zip-contents.png"
-                    alt="Unzipped folder showing chrome-extension and firefox-extension.xpi"
-                    width="720"
-                    height="405"
-                    loading="lazy"
-                  />
-                  <figcaption>Firefox uses <strong>chrome-extension/manifest.json</strong> or <strong>firefox-extension.xpi</strong> — via debugging only.</figcaption>
-                </figure>
-              </article>
-              <article class="setup-step">
-                <h3><span class="step-num">2</span> Open about:debugging</h3>
-                <p>
-                  In the address bar, open <code>about:debugging</code> → <strong>This Firefox</strong> →
-                  <strong>Load Temporary Add-on…</strong>
-                </p>
-                <figure>
-                  <img
-                    src="./images/setup/05-firefox-debugging.png"
-                    alt="Firefox about:debugging page with Load Temporary Add-on button"
-                    width="720"
-                    height="405"
-                    loading="lazy"
-                  />
-                  <figcaption>Type <code>about:debugging</code> in the address bar — not <code>about:addons</code>.</figcaption>
-                </figure>
-              </article>
-              <article class="setup-step">
-                <h3><span class="step-num">3</span> Select manifest.json</h3>
-                <p>
-                  Set the file picker to <strong>All Files</strong>, open <code>chrome-extension/</code>, and
-                  select <code>manifest.json</code> (or pick <code>firefox-extension.xpi</code> from the zip root).
-                </p>
-                <figure>
-                  <img
-                    src="./images/setup/06-firefox-manifest.png"
-                    alt="File picker with All Files format and manifest.json selected"
-                    width="720"
-                    height="405"
-                    loading="lazy"
-                  />
-                  <figcaption>All Files → <code>manifest.json</code> inside <code>chrome-extension/</code>.</figcaption>
-                </figure>
-              </article>
-              <article class="setup-step">
-                <h3><span class="step-num">4</span> Convert any page</h3>
-                <p>Visit a page, open the extension, click Convert, then copy or download Markdown.</p>
-                <figure>
+              </div>
+            </details>
+
+            <section class="setup-after-install content" id="after-install" aria-labelledby="after-install-heading">
+              <h3 id="after-install-heading">After install</h3>
+              <p>Chrome and Firefox use the same popup — convert any page, then copy or download Markdown.</p>
+              <figure>
+                <picture>
+                  <source type="image/avif" srcset="./images/setup/04-convert-popup.avif" />
+                  <source type="image/webp" srcset="./images/setup/04-convert-popup.webp" />
                   <img
                     src="./images/setup/04-convert-popup.png"
                     alt="Markdown Convert popup showing YAML frontmatter and preview"
                     width="720"
                     height="405"
                     loading="lazy"
+                    decoding="async"
                   />
-                  <figcaption>Same extension popup as Chrome after install.</figcaption>
-                </figure>
-              </article>
-              <p class="tip tip-firefox">
-                <strong>Tip:</strong> Grayed files? Use <strong>All Files</strong> in the picker.
-                “Not been verified”? You opened <code>about:addons</code> — use <code>about:debugging</code> instead.
-                The add-on is removed when you fully quit Firefox.
-              </p>
+                </picture>
+                <figcaption>Extension popup with preview and copy/download actions.</figcaption>
+              </figure>
             </section>
           </div>
         </section>
@@ -1305,7 +1468,7 @@
         <span aria-hidden="true">·</span>
         <a href="https://github.com/tanveerriaz/markdown-ext/blob/main/docs/SETUP.md" target="_blank" rel="noopener noreferrer">Setup guide</a>
         <span aria-hidden="true">·</span>
-        <a href="#">Other Tools</a>
+        <a href="https://github.com/tanveerriaz" target="_blank" rel="noopener noreferrer">Other tools</a>
       </nav>
       <p class="footer-trademarks">
         Google Chrome and Firefox logos are trademarks of their respective owners.
