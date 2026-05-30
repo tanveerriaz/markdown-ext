@@ -12,11 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Optimize setup images
+      - name: Optimize landing images
         run: |
           cd landing/scripts
           npm install
-          node optimize-setup-images.mjs
+          node optimize-landing-images.mjs
           cp ../../extension/icons/icon-128.png ../images/og.png
 
       - name: Package Extension

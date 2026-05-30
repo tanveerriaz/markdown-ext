@@ -19,60 +19,35 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
-        /* Palette: Muted Teal, Lavender Grey, Wisteria Blue, Lime Cream, Frosted Mint */
-        --muted-teal: #8aa399;
-        --lavender-grey: #7d84b2;
-        --wisteria-blue: #8fa6cb;
-        --lime-cream: #dbf4a7;
-        --frosted-mint: #d5f9de;
-
-        --bg: #e8f6ec;
-        --bg-elevated: #f7fdf9;
-        --bg-card: #ffffff;
-        --text: #2a3531;
-        --text-secondary: #3d4f4a;
-        --text-muted: #4a5c56;
-        --accent: var(--muted-teal);
-        --accent-light: var(--lime-cream);
-        --accent-hover: #6f8a80;
-        --chrome: var(--wisteria-blue);
-        --chrome-light: #e8eef6;
-        --chrome-hover: #7a95b8;
-        --firefox: var(--lavender-grey);
-        --firefox-light: #eceef6;
-        --firefox-hover: #6a70a0;
-        --warn-bg: var(--lime-cream);
-        --warn-border: var(--lavender-grey);
-        --warn-text: #4a4f6e;
-        --border: #b8cfc4;
-        --border-strong: var(--muted-teal);
-        --shadow: 0 1px 3px rgba(42, 53, 49, 0.08), 0 1px 2px rgba(42, 53, 49, 0.04);
-        --shadow-md: 0 8px 24px rgba(42, 53, 49, 0.1);
-        --shadow-lg: 0 16px 40px rgba(42, 53, 49, 0.12);
-        --radius: 14px;
-        --radius-sm: 10px;
+        --paper: #fbf7ef;
+        --paper-2: #f4eee2;
+        --ink: #211c16;
+        --ink-soft: #4a4339;
+        --ink-faint: #8a8070;
+        --line: #e2d9c8;
+        --accent: #b4502e;
+        --accent-soft: #efd9ce;
+        --serif: "Newsreader", Georgia, serif;
+        --sans: "Hanken Grotesk", system-ui, sans-serif;
+        --mono: "JetBrains Mono", monospace;
       }
-
-      *,
-      *::before,
-      *::after {
+      * {
         box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-
       html {
         scroll-behavior: smooth;
       }
-
       @media (prefers-reduced-motion: reduce) {
         html {
           scroll-behavior: auto;
         }
-
         *,
         *::before,
         *::after {
@@ -81,7 +56,21 @@
           transition-duration: 0.01ms !important;
         }
       }
-
+      body {
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--sans);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 0 40px;
+      }
+      a {
+        color: inherit;
+      }
       .skip-link {
         position: absolute;
         left: -9999px;
@@ -89,1200 +78,711 @@
         z-index: 200;
         padding: 10px 16px;
         font-weight: 600;
-        background: var(--bg-card);
-        color: var(--text);
-        border-radius: var(--radius-sm);
-        box-shadow: var(--shadow-md);
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(33, 28, 22, 0.12);
       }
-
       .skip-link:focus {
         left: 16px;
         top: 8px;
       }
 
-      body {
-        margin: 0;
-        font-family: "DM Sans", sans-serif;
-        font-size: 16px;
-        line-height: 1.6;
-        color: var(--text);
-        background: var(--bg);
-        background-image:
-          radial-gradient(ellipse 80% 50% at 50% -20%, rgba(138, 163, 153, 0.35), transparent),
-          radial-gradient(ellipse 60% 40% at 100% 0%, rgba(143, 166, 203, 0.25), transparent),
-          radial-gradient(ellipse 50% 30% at 0% 10%, rgba(125, 132, 178, 0.2), transparent),
-          linear-gradient(180deg, var(--frosted-mint) 0%, var(--bg) 45%, #eef8f1 100%);
-        overflow-x: hidden;
+      header.site {
+        border-bottom: 1px solid var(--line);
       }
-
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
-
-      .page {
-        max-width: 1080px;
-        margin: 0 auto;
-        padding: 0 24px;
-      }
-
-      .content {
-        max-width: 720px;
-        margin: 0 auto;
-      }
-
-      /* Top bar */
-      .topbar {
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        height: 48px;
+      .site-inner {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 24px;
-        background: rgba(232, 246, 236, 0.88);
-        border-bottom: 1px solid transparent;
-        transition: background 0.2s ease, border-color 0.2s ease,
-          backdrop-filter 0.2s ease;
+        height: 64px;
       }
-
-      .topbar.scrolled {
-        background: rgba(232, 246, 236, 0.96);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border-bottom-color: var(--border);
-      }
-
-      .topbar-inner {
-        max-width: 1080px;
-        width: 100%;
-        margin: 0 auto;
+      .wordmark {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-      }
-
-      .author {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 14px;
-        color: var(--text-muted);
-      }
-
-      .author-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--accent);
-        flex-shrink: 0;
-      }
-
-      .github-link {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: var(--radius-sm);
-        color: var(--text-muted);
-        transition: color 0.2s ease, background 0.2s ease;
-      }
-
-      .github-link:hover {
-        color: var(--text);
-        background: var(--accent-light);
-      }
-
-      .github-link svg {
-        width: 20px;
-        height: 20px;
-      }
-
-      /* Hero */
-      .hero {
-        padding: 64px 0 80px;
-        text-align: center;
-      }
-
-      .hero-logo {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 80px;
-        height: 80px;
-        margin-bottom: 20px;
-        border-radius: 20px;
-        box-shadow: var(--shadow-md);
-      }
-
-      .hero-logo svg {
-        width: 44px;
-        height: 44px;
-      }
-
-      .hero h1 {
-        margin: 0 0 16px;
-        font-size: 40px;
-        font-weight: 700;
-        line-height: 1.2;
-        letter-spacing: -0.02em;
-      }
-
-      .hero-tagline {
-        margin: 0 auto 24px;
-        max-width: 560px;
-        font-size: 20px;
-        line-height: 1.5;
-        color: var(--text-secondary);
-      }
-
-      .badge-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        justify-content: center;
-        margin-bottom: 28px;
-      }
-
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 14px;
-        font-size: 13px;
+        gap: 12px;
+        font-family: var(--serif);
+        font-size: 19px;
         font-weight: 600;
-        border-radius: 999px;
-        border: 1px solid transparent;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+      }
+      .mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        background: var(--ink);
+        color: var(--paper);
+        display: grid;
+        place-items: center;
+        font-family: var(--serif);
+        font-weight: 600;
+        font-size: 18px;
+        line-height: 1;
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        font-size: 14px;
+        color: var(--ink-soft);
+      }
+      .nav-links a {
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      .nav-links a:hover {
+        color: var(--accent);
       }
 
-      .badge .brand-icon {
-        width: 18px;
-        height: 18px;
+      .hero {
+        padding: 96px 0 72px;
       }
-
-      .badge-chrome {
-        color: var(--chrome-hover);
-        background: var(--chrome-light);
-        border-color: rgba(143, 166, 203, 0.45);
+      .eyebrow {
+        font-family: var(--mono);
+        font-size: 12.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 26px;
       }
-
-      .badge-firefox {
-        color: var(--firefox-hover);
-        background: var(--firefox-light);
-        border-color: rgba(125, 132, 178, 0.45);
+      h1.title {
+        font-family: var(--serif);
+        font-weight: 500;
+        font-size: clamp(48px, 7vw, 82px);
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+        max-width: 14ch;
+        text-wrap: balance;
       }
-
+      h1.title em {
+        font-style: italic;
+        color: var(--accent);
+      }
+      .lede {
+        font-family: var(--serif);
+        font-size: 22px;
+        line-height: 1.5;
+        color: var(--ink-soft);
+        max-width: 46ch;
+        margin-top: 28px;
+      }
       .cta-row {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
-        justify-content: center;
-        margin-bottom: 8px;
-      }
-
-      .hero-install-hint {
-        margin: 0 auto 12px;
-        max-width: 560px;
-        font-size: 14px;
-        color: var(--text-secondary);
-        line-height: 1.5;
-      }
-
-      .hero-install-hint code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        font-size: 0.9em;
-        padding: 2px 6px;
-        border-radius: 4px;
-        background: var(--lime-cream);
-        border: 1px solid var(--border);
-      }
-
-      .hero-secondary {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px 20px;
-        justify-content: center;
         align-items: center;
-        margin-bottom: 12px;
-        font-size: 14px;
+        gap: 14px;
+        margin-top: 40px;
       }
-
-      .hero-github {
-        font-weight: 600;
-        color: var(--text-secondary);
-        text-decoration: underline;
-        text-underline-offset: 3px;
-      }
-
-      .hero-github:hover {
-        color: var(--text);
-      }
-
-      .hero-setup-link {
-        font-weight: 600;
-        color: var(--accent-hover);
-      }
-
-      .hero-setup-link:hover {
-        color: var(--text);
-      }
-
       .btn {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 12px 24px;
-        font-family: inherit;
-        font-size: 16px;
-        font-weight: 600;
-        border-radius: var(--radius);
-        border: 2px solid transparent;
-        cursor: pointer;
-        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
-          transform 0.2s ease;
-      }
-
-      .btn svg {
-        width: 20px;
-        height: 20px;
-        flex-shrink: 0;
-      }
-
-      .btn-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .brand-icon {
-        display: block;
-        object-fit: contain;
-        flex-shrink: 0;
-      }
-
-      .brand-icon--sm {
-        width: 20px;
-        height: 20px;
-      }
-
-      .brand-icon--md {
-        width: 28px;
-        height: 28px;
-      }
-
-      .btn-chrome {
-        background: var(--chrome);
-        color: #fff;
-        border-color: var(--chrome);
-        box-shadow: 0 2px 10px rgba(143, 166, 203, 0.45);
-      }
-
-      .btn-chrome:hover {
-        background: var(--chrome-hover);
-        border-color: var(--chrome-hover);
-        transform: translateY(-1px);
-      }
-
-      .btn-firefox {
-        background: var(--firefox);
-        color: #fff;
-        border-color: var(--firefox);
-        box-shadow: 0 2px 10px rgba(125, 132, 178, 0.45);
-      }
-
-      .btn-firefox:hover {
-        background: var(--firefox-hover);
-        border-color: var(--firefox-hover);
-        transform: translateY(-1px);
-      }
-
-      .btn-ghost {
-        background: var(--bg-elevated);
-        color: var(--text-secondary);
-        border-color: var(--border);
-      }
-
-      .btn-ghost:hover {
-        background: var(--frosted-mint);
-        border-color: var(--border-strong);
-        color: var(--text);
-      }
-
-      .version-note {
-        margin: 0;
-        font-size: 14px;
-        color: var(--text-muted);
-      }
-
-      /* Sections */
-      .section {
-        padding: 80px 0;
-      }
-
-      .section-heading {
-        margin: 0 0 32px;
-        font-size: 24px;
-        font-weight: 700;
-        line-height: 1.2;
-        text-align: center;
-      }
-
-      /* Feature cards */
-      .features-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 24px;
-      }
-
-      .feature-card {
-        padding: 24px;
-        background: var(--bg-card);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-      }
-
-      .feature-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-      }
-
-      .feature-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 44px;
-        height: 44px;
-        margin-bottom: 16px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #7c3aed, #22c55e);
-        color: #fff;
-      }
-
-      .feature-icon svg {
-        width: 22px;
-        height: 22px;
-      }
-
-      .feature-card h3 {
-        margin: 0 0 8px;
-        font-size: 16px;
-        font-weight: 600;
-        line-height: 1.3;
-      }
-
-      .feature-card p {
-        margin: 0;
-        font-size: 15px;
-        color: var(--text-secondary);
-        line-height: 1.6;
-      }
-
-      .section-features {
-        background: linear-gradient(180deg, var(--frosted-mint) 0%, var(--lime-cream) 100%);
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-      }
-
-      /* Steps */
-      .steps {
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        gap: 0;
-        max-width: 900px;
-        margin: 0 auto;
-      }
-
-      .step {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        position: relative;
-        min-width: 0;
-        padding: 0 8px;
-      }
-
-      .step:not(:last-child)::after {
-        content: "";
-        position: absolute;
-        top: 20px;
-        left: calc(50% + 28px);
-        right: calc(-50% + 28px);
-        height: 0;
-        border-top: 2px dashed var(--accent-light);
-      }
-
-      .step-number {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 16px;
-        font-size: 16px;
-        font-weight: 700;
-        color: #fff;
-        background: var(--accent);
-        border-radius: 50%;
-        flex-shrink: 0;
-        position: relative;
-        z-index: 1;
-      }
-
-      .step h3 {
-        margin: 0 0 8px;
-        font-size: 16px;
-        font-weight: 600;
-      }
-
-      .step p {
-        margin: 0;
-        font-size: 14px;
-        color: var(--text-muted);
-        line-height: 1.5;
-      }
-
-      /* Tip callout */
-      .tip {
-        margin: 0;
-        padding: 20px 24px;
-        background: var(--accent-light);
-        border-left: 4px solid var(--accent);
-        border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-        font-size: 15px;
-        line-height: 1.6;
-        color: var(--text);
-      }
-
-      .tip strong {
-        font-weight: 600;
-      }
-
-      /* Footer */
-      .footer {
-        padding: 48px 24px;
-        text-align: center;
-        border-top: 1px solid var(--border);
-      }
-
-      .footer-brand {
-        margin: 0 0 8px;
-        font-size: 15px;
-        font-weight: 500;
-        color: var(--text-muted);
-        font-style: italic;
-      }
-
-      .footer-made {
-        margin: 0 0 16px;
-        font-size: 15px;
-        color: var(--text);
-      }
-
-      .footer-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px 16px;
-        justify-content: center;
-        margin-bottom: 16px;
-        font-size: 15px;
-      }
-
-      .footer-links a {
-        color: var(--accent);
-        font-weight: 500;
-        transition: color 0.2s ease;
-      }
-
-      .footer-links a:hover {
-        color: var(--accent-hover);
-      }
-
-      .footer-copy {
-        margin: 0;
-        font-size: 13px;
-        color: var(--text-muted);
-      }
-
-      .footer-trademarks {
-        margin: 0 0 12px;
-        max-width: 520px;
-        margin-left: auto;
-        margin-right: auto;
-        font-size: 12px;
-        line-height: 1.5;
-        color: var(--text-muted);
-      }
-
-      .footer-trademarks a {
-        color: var(--accent);
-        font-weight: 500;
-      }
-
-      /* Setup guide */
-      .setup-guide {
-        max-width: 720px;
-        margin: 0 auto;
-      }
-
-      .setup-intro {
-        margin: 0 auto 28px;
-        max-width: 560px;
-        text-align: center;
-        font-size: 16px;
-        color: var(--text-secondary);
-        line-height: 1.6;
-      }
-
-      .setup-intro a {
-        color: var(--accent);
-        font-weight: 500;
-      }
-
-      .setup-intro a:hover {
-        color: var(--accent-hover);
-      }
-
-      .setup-step {
-        margin-bottom: 40px;
-      }
-
-      .setup-step:last-child {
-        margin-bottom: 0;
-      }
-
-      .setup-step h3 {
-        display: flex;
-        align-items: center;
         gap: 10px;
-        margin: 0 0 10px;
-        font-size: 18px;
+        font-family: var(--sans);
         font-weight: 600;
-        color: var(--text);
-      }
-
-      .step-num {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 28px;
-        height: 28px;
-        padding: 0 8px;
-        font-size: 14px;
-        font-weight: 700;
-        color: #fff;
-        border-radius: 8px;
-        flex-shrink: 0;
-      }
-
-      .setup-browser-chrome .step-num {
-        background: var(--chrome);
-      }
-
-      .setup-browser-firefox .step-num {
-        background: var(--firefox);
-      }
-
-      .setup-step p {
-        margin: 0 0 16px;
         font-size: 15px;
-        color: var(--text-secondary);
-        line-height: 1.55;
+        padding: 13px 22px;
+        border-radius: 10px;
+        text-decoration: none;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        transition: transform 0.12s, box-shadow 0.2s, background 0.2s;
+      }
+      .btn-primary {
+        background: var(--ink);
+        color: var(--paper);
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(33, 28, 22, 0.18);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--ink);
+        border-color: var(--line);
+      }
+      .btn-ghost:hover {
+        border-color: var(--ink);
+      }
+      .btn svg {
+        width: 17px;
+        height: 17px;
+      }
+      .btn img.bicon {
+        width: 19px;
+        height: 19px;
+        object-fit: contain;
+      }
+      .meta-line {
+        margin-top: 22px;
+        font-size: 13.5px;
+        color: var(--ink-faint);
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .meta-line .dot::before {
+        content: "·";
+        margin-right: 16px;
+        color: var(--line);
       }
 
-      .setup-step figure {
-        margin: 0;
+      .showcase {
+        margin-top: 64px;
       }
-
-      .setup-step picture,
-      .setup-after-install picture {
+      .frame {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 40px 80px -50px rgba(33, 28, 22, 0.6);
+      }
+      .frame picture,
+      .shot picture {
         display: block;
       }
-
-      .setup-step img,
-      .setup-after-install img {
+      .frame img,
+      .shot img {
         display: block;
         width: 100%;
         height: auto;
-        border-radius: var(--radius-sm);
-        border: 2px solid var(--border);
-        box-shadow: var(--shadow-md);
-        background: #fff;
       }
-
-      .setup-step figcaption {
-        margin-top: 10px;
-        font-size: 13px;
-        color: var(--text-muted);
+      .showcase figcaption {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 14px;
+        color: var(--ink-faint);
+        margin-top: 16px;
         text-align: center;
       }
 
-      .setup-step code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        font-size: 0.88em;
-        padding: 3px 7px;
-        border-radius: 5px;
-        background: var(--lime-cream);
-        color: var(--text);
-        border: 1px solid var(--border);
+      .section {
+        padding: 84px 0;
+        border-top: 1px solid var(--line);
+      }
+      .sec-label {
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+        margin-bottom: 14px;
+      }
+      .sec-title {
+        font-family: var(--serif);
+        font-weight: 500;
+        font-size: clamp(30px, 4vw, 44px);
+        letter-spacing: -0.02em;
+        line-height: 1.08;
+        max-width: 18ch;
+      }
+      .sec-intro {
+        font-size: 16px;
+        color: var(--ink-soft);
+        max-width: 52ch;
+        margin-top: 16px;
       }
 
-      .setup-nav {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px 16px;
-        justify-content: center;
-        align-items: center;
-        margin: 0 auto 40px;
-        max-width: 560px;
+      .features {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0;
+        margin-top: 56px;
+        border-top: 1px solid var(--line);
+      }
+      .feat {
+        padding: 34px 30px 34px 0;
+        border-right: 1px solid var(--line);
+      }
+      .feat:last-child {
+        border-right: none;
+        padding-right: 0;
+      }
+      .feat:not(:first-child) {
+        padding-left: 30px;
+      }
+      .feat-num {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 26px;
+        color: var(--accent);
+        margin-bottom: 18px;
+      }
+      .feat h3 {
+        font-family: var(--serif);
+        font-weight: 600;
+        font-size: 21px;
+        letter-spacing: -0.01em;
+        margin-bottom: 10px;
+      }
+      .feat p {
         font-size: 15px;
+        color: var(--ink-soft);
       }
 
-      .setup-nav a {
+      .pills {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 36px 0 30px;
+      }
+      .pill {
+        font-family: var(--mono);
+        font-size: 13px;
+        padding: 9px 16px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink-soft);
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 10px 18px;
-        font-weight: 600;
-        color: var(--text);
-        background: var(--bg-elevated);
-        border: 2px solid var(--border);
-        border-radius: 999px;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        text-decoration: none;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+      }
+      .pill svg {
+        width: 15px;
+        height: 15px;
+      }
+      .pill img.bicon {
+        width: 15px;
+        height: 15px;
+        object-fit: contain;
+      }
+      .pill:hover {
+        border-color: var(--ink);
+        color: var(--ink);
+      }
+      .pill.active {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
       }
 
-      .setup-nav a .brand-icon {
-        width: 18px;
-        height: 18px;
+      .tree {
+        background: #20211e;
+        border-radius: 14px;
+        padding: 24px 26px;
+        font-family: var(--mono);
+        font-size: 13px;
+        color: #d7d3c5;
+        line-height: 2;
+        white-space: pre-wrap;
       }
-
-      .setup-nav a[href="#chrome-setup"] {
-        border-color: rgba(143, 166, 203, 0.55);
+      .tree .root {
+        color: #e8b98c;
       }
-
-      .setup-nav a[href="#chrome-setup"]:hover {
-        border-color: var(--chrome);
-        box-shadow: 0 0 0 3px var(--chrome-light);
+      .tree .tag {
+        display: inline-block;
+        font-size: 11px;
+        padding: 2px 9px;
+        border-radius: 5px;
+        background: #34352f;
+        color: #abbfa6;
+        margin-left: 10px;
       }
-
-      .setup-nav a[href="#firefox-setup"] {
-        border-color: rgba(125, 132, 178, 0.55);
-      }
-
-      .setup-nav a[href="#firefox-setup"]:hover {
-        border-color: var(--firefox);
-        box-shadow: 0 0 0 3px var(--firefox-light);
-      }
-
-      .setup-nav a[href*="SETUP"] {
-        border-color: var(--border);
-        color: var(--text-secondary);
-      }
-
-      .setup-nav-sep {
-        color: var(--text-muted);
-        user-select: none;
-      }
-
-      .setup-browser {
-        margin-top: 48px;
-        padding: 32px 28px 28px;
-        border-radius: var(--radius);
-        border: 2px solid var(--border);
-        background: var(--bg-elevated);
-        box-shadow: var(--shadow);
-      }
-
-      .setup-browser:first-of-type {
-        margin-top: 0;
+      .tree .muted {
+        color: #8c8a7e;
       }
 
       #chrome-setup,
-      #firefox-setup {
-        scroll-margin-top: 72px;
+      #firefox-setup,
+      #after-install {
+        scroll-margin-top: 80px;
       }
 
-      .setup-browser-chrome {
-        border-color: rgba(143, 166, 203, 0.5);
-        box-shadow: 0 4px 24px rgba(143, 166, 203, 0.15);
-      }
-
-      .setup-browser-firefox {
-        border-color: rgba(125, 132, 178, 0.5);
-        box-shadow: 0 4px 24px rgba(125, 132, 178, 0.15);
-      }
-
-      .setup-browser-heading {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        margin: 0 0 28px;
-        font-size: 22px;
-        font-weight: 700;
-        text-align: center;
-        color: var(--text);
-      }
-
-      .setup-browser-heading .brand-icon {
-        width: 28px;
-        height: 28px;
-      }
-
-      .setup-browser-details {
+      .steps {
         margin-top: 48px;
+        display: flex;
+        flex-direction: column;
+        gap: 52px;
+      }
+      .step {
+        display: grid;
+        grid-template-columns: 48px 1fr;
+        gap: 24px;
+      }
+      .step-n {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 30px;
+        color: var(--accent);
+        line-height: 1;
+      }
+      .step h4 {
+        font-family: var(--serif);
+        font-weight: 600;
+        font-size: 22px;
+        margin-bottom: 8px;
+        letter-spacing: -0.01em;
+      }
+      .step p {
+        font-size: 15.5px;
+        color: var(--ink-soft);
+        max-width: 56ch;
+      }
+      .step a {
+        color: var(--accent);
+        font-weight: 600;
+      }
+      code.inline {
+        font-family: var(--mono);
+        font-size: 0.86em;
+        background: var(--paper-2);
+        padding: 2px 7px;
+        border-radius: 5px;
+        color: var(--accent);
+      }
+      .shot {
+        margin-top: 22px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+      }
+      .caption {
+        font-size: 13px;
+        color: var(--ink-faint);
+        margin-top: 12px;
+        font-style: italic;
+        font-family: var(--serif);
       }
 
-      .setup-browser-details > summary {
+      .firefox-block {
+        margin-top: 56px;
+        padding-top: 48px;
+        border-top: 1px solid var(--line);
+      }
+      .firefox-block > summary {
         list-style: none;
         cursor: pointer;
+        font-family: var(--serif);
+        font-weight: 600;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 0;
       }
-
-      .setup-browser-details > summary::-webkit-details-marker {
+      .firefox-block > summary::-webkit-details-marker {
         display: none;
       }
-
-      .setup-browser-details > summary.setup-browser-heading {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .setup-browser-details > summary.setup-browser-heading::after {
-        content: "Show steps";
+      .firefox-block > summary::after {
+        content: "Show Firefox steps";
         margin-left: auto;
+        font-family: var(--sans);
         font-size: 14px;
         font-weight: 600;
-        color: var(--firefox-hover);
+        color: var(--ink-faint);
       }
-
-      .setup-browser-details[open] > summary.setup-browser-heading::after {
-        content: "Hide steps";
+      .firefox-block[open] > summary::after {
+        content: "Hide Firefox steps";
       }
-
-      .setup-browser-details .setup-browser-inner {
-        padding-top: 8px;
+      .firefox-block > summary img.bicon {
+        width: 22px;
+        height: 22px;
       }
-
+      .firefox-inner {
+        padding-top: 28px;
+      }
       .setup-warning {
-        margin: 0 0 24px;
+        margin-bottom: 28px;
         padding: 16px 18px;
+        background: var(--accent-soft);
+        border: 1px solid var(--line);
+        border-radius: 12px;
         font-size: 14px;
+        color: var(--ink-soft);
         line-height: 1.55;
-        color: var(--warn-text);
-        background: var(--warn-bg);
-        border: 2px solid var(--warn-border);
-        border-radius: var(--radius-sm);
       }
-
       .setup-warning-title {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        margin: 0 0 10px;
-        font-size: 15px;
         font-weight: 700;
-        color: var(--warn-text);
+        color: var(--ink);
+        margin-bottom: 10px;
+        font-size: 15px;
       }
-
-      .setup-warning-title svg {
-        width: 20px;
-        height: 20px;
-        flex-shrink: 0;
-        color: var(--warn-border);
-      }
-
-      .setup-warning-list {
+      .setup-warning ul {
         margin: 0;
         padding-left: 20px;
       }
-
-      .setup-warning-list li {
+      .setup-warning li {
         margin-bottom: 6px;
       }
-
-      .setup-warning-list li:last-child {
+      .setup-warning li:last-child {
         margin-bottom: 0;
       }
 
-      .setup-after-install {
-        margin-top: 40px;
-        padding: 28px 28px 24px;
-        border-radius: var(--radius);
-        border: 2px dashed var(--border-strong);
-        background: var(--bg-card);
+      .after-install {
+        margin-top: 56px;
+        padding: 32px 0 0;
+        border-top: 1px dashed var(--line);
+      }
+      .after-install h4 {
+        font-family: var(--serif);
+        font-weight: 600;
+        font-size: 22px;
+        margin-bottom: 10px;
+      }
+      .tip {
+        margin-top: 20px;
+        padding: 14px 16px;
+        font-size: 14px;
+        color: var(--ink-soft);
+        background: var(--paper-2);
+        border-left: 4px solid var(--accent);
+        border-radius: 0 8px 8px 0;
       }
 
-      .setup-after-install h3 {
-        margin: 0 0 12px;
-        font-size: 18px;
-        font-weight: 700;
+      footer.site {
+        border-top: 1px solid var(--line);
+        padding: 56px 0 64px;
       }
-
-      .setup-after-install p {
-        margin: 0 0 16px;
-        font-size: 15px;
-        color: var(--text-secondary);
-        line-height: 1.55;
+      .foot-top {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 20px;
+        color: var(--ink-soft);
+        margin-bottom: 22px;
       }
-
-      .zip-tree {
-        margin: 0 0 20px;
-        padding: 18px 20px;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        font-size: 13px;
-        line-height: 1.7;
-        background: #3d4f4a;
-        color: var(--frosted-mint);
-        border-radius: var(--radius-sm);
-        border: 2px solid var(--muted-teal);
-      }
-
-      .zip-tree-root {
-        font-weight: 700;
-        color: var(--lime-cream);
-        margin-bottom: 8px;
-      }
-
-      .zip-tree-line {
+      .foot-links {
         display: flex;
         flex-wrap: wrap;
-        align-items: baseline;
-        gap: 8px 12px;
-        padding: 6px 0 6px 16px;
-        border-left: 2px solid var(--muted-teal);
-        margin-left: 4px;
+        gap: 22px;
+        font-size: 14px;
+        color: var(--ink-soft);
+        margin-bottom: 26px;
+      }
+      .foot-links a {
+        text-decoration: none;
+      }
+      .foot-links a:hover {
+        color: var(--accent);
+      }
+      .foot-fine {
+        font-size: 12.5px;
+        color: var(--ink-faint);
+        max-width: 60ch;
+        line-height: 1.55;
+      }
+      .foot-fine a {
+        text-decoration: underline;
+        text-underline-offset: 2px;
       }
 
-      .zip-tree-line + .zip-tree-line {
-        margin-top: 4px;
-      }
-
-      .zip-tree-name {
-        color: var(--wisteria-blue);
-        font-weight: 600;
-      }
-
-      .zip-tree-chrome .zip-tree-name {
-        color: #b8c9e8;
-      }
-
-      .zip-tree-firefox .zip-tree-name {
-        color: #c4c8e8;
-      }
-
-      .zip-tree-label {
-        font-family: "DM Sans", sans-serif;
-        font-size: 12px;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 4px;
-      }
-
-      .zip-tree-chrome .zip-tree-label {
-        color: #3d4f6e;
-        background: var(--wisteria-blue);
-      }
-
-      .zip-tree-firefox .zip-tree-label {
-        color: #3d3f5c;
-        background: var(--lavender-grey);
-      }
-
-      .tip {
-        border-left-width: 4px;
-      }
-
-      .tip-chrome {
-        background: var(--chrome-light);
-        border-left-color: var(--chrome);
-      }
-
-      .tip-firefox {
-        background: var(--firefox-light);
-        border-left-color: var(--firefox);
-      }
-
-      @media (max-width: 768px) {
-        .section {
-          padding: 48px 0;
+      @media (max-width: 860px) {
+        .wrap {
+          padding: 0 24px;
         }
-
-        .hero {
-          padding: 48px 0;
-        }
-
-        .hero h1 {
-          font-size: 32px;
-        }
-
-        .hero-tagline {
-          font-size: 18px;
-        }
-
-        .cta-row {
-          flex-direction: column;
-          align-items: stretch;
-        }
-
-        .btn {
-          width: 100%;
-        }
-
-        .features-grid {
+        .features {
           grid-template-columns: 1fr;
         }
-
-        .setup-browser {
-          padding: 24px 18px 20px;
+        .feat {
+          border-right: none;
+          border-bottom: 1px solid var(--line);
+          padding: 28px 0 !important;
         }
-
-        .zip-tree {
-          font-size: 12px;
-        }
-
-        .steps {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 0;
-          padding-left: 20px;
-          border-left: 2px dashed var(--accent-light);
-          margin-left: 20px;
-        }
-
-        .step {
-          flex-direction: row;
-          align-items: flex-start;
-          text-align: left;
-          gap: 16px;
-          padding: 0 0 32px 0;
-        }
-
-        .step:last-child {
-          padding-bottom: 0;
-        }
-
-        .step:not(:last-child)::after {
-          display: none;
-        }
-
-        .step-number {
-          margin-bottom: 0;
-        }
-
-        .step-body {
-          flex: 1;
-          min-width: 0;
+        .feat:last-child {
+          border-bottom: none;
         }
       }
     </style>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <!--
-      CUSTOMIZE (clone for a new tool in ~5 min):
-      - :root colors (optional)
-      - hero-icon emoji, h1 tool name, hero-tagline, badge text
-      - download href, github href, version-note
-      - 3× feature cards (emoji, title, description)
-      - 3× steps (title, helper text)
-      - tip text
-      - <title> and meta description
-    -->
 
-    <header class="topbar" id="topbar">
-      <div class="topbar-inner">
-        <div class="author">
-          <span class="author-dot" aria-hidden="true"></span>
-          <span>by Tanveer Riaz</span>
-        </div>
-        <a
-          class="github-link"
-          href="https://github.com/tanveerriaz/markdown-ext"
-          aria-label="View on GitHub"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path
-              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"
-            />
-          </svg>
-        </a>
+    <header class="site">
+      <div class="wrap site-inner">
+        <div class="wordmark"><span class="mark" aria-hidden="true">M</span> Markdown Convert</div>
+        <nav class="nav-links" aria-label="Page">
+          <a href="#what">What it does</a>
+          <a href="#setup">Setup</a>
+          <a href="https://github.com/tanveerriaz/markdown-ext" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </nav>
       </div>
     </header>
 
-    <div class="page">
-      <main id="main">
-        <section class="hero content">
-          <div class="hero-logo" aria-hidden="true">
-            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="hero-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#7c3aed"/>
-                  <stop offset="100%" stop-color="#22c55e"/>
-                </linearGradient>
-              </defs>
-              <rect width="48" height="48" rx="12" fill="url(#hero-grad)"/>
-              <text
-                x="24"
-                y="33"
-                font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
-                font-size="28"
-                font-weight="700"
-                fill="#ffffff"
-                text-anchor="middle"
-              >M</text>
-            </svg>
-          </div>
-          <h1>Markdown Convert</h1>
-          <p class="hero-tagline">
-            Convert any webpage into clean, copyable Markdown in one click.
+    <main id="main">
+      <section class="hero">
+        <div class="wrap">
+          <div class="eyebrow">Browser extension · Free</div>
+          <h1 class="title">Any page, turned into <em>clean Markdown.</em></h1>
+          <p class="lede">
+            Click once. Markdown Convert lifts the real content off the page — no menus, no ads, no
+            cookie banners — and hands you tidy Markdown to copy or save.
           </p>
-          <div class="badge-row">
-            <span class="badge badge-chrome">
-              <img class="brand-icon" src="./images/brands/google-chrome.svg" alt="" width="18" height="18" aria-hidden="true" />
-              Chrome · Edge · Brave
-            </span>
-            <span class="badge badge-firefox">
-              <img class="brand-icon" src="./images/brands/firefox.svg" alt="" width="18" height="18" aria-hidden="true" />
-              Firefox
-            </span>
-          </div>
           <div class="cta-row">
-            <a class="btn btn-chrome" href="./markdown-ext.zip" download>
-              <span class="btn-icon" aria-hidden="true">
-                <img class="brand-icon brand-icon--sm" src="./images/brands/google-chrome.svg" alt="" width="20" height="20" decoding="async" />
-              </span>
+            <a class="btn btn-primary" href="./markdown-ext.zip" download>
+              <svg viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 24L4.95 13A22 22 0 0 1 43.05 13Z" />
+                <path fill="#34A853" d="M24 24L4.95 13A22 22 0 0 0 24 46Z" />
+                <path fill="#FBBC05" d="M24 24L43.05 13A22 22 0 0 1 24 46Z" />
+                <circle cx="24" cy="24" r="10.5" fill="#fff" />
+                <circle cx="24" cy="24" r="8.3" fill="#4285F4" />
+              </svg>
               Chrome extension
             </a>
             <a
-              class="btn btn-firefox"
+              class="btn btn-ghost"
               href="./firefox-extension.xpi"
               download
               title="Install via about:debugging only — not about:addons"
             >
-              <span class="btn-icon" aria-hidden="true">
-                <img class="brand-icon brand-icon--sm" src="./images/brands/firefox.svg" alt="" width="20" height="20" decoding="async" />
-              </span>
+              <img
+                class="bicon"
+                src="./images/showcase/firefox.png"
+                alt=""
+                width="19"
+                height="19"
+                decoding="async"
+                aria-hidden="true"
+              />
               Firefox extension
             </a>
           </div>
-          <p class="hero-install-hint content">
-            <strong>Chrome:</strong> load unpacked · <strong>Firefox:</strong> only
-            <code>about:debugging</code> (not Add-ons)
-          </p>
-          <div class="hero-secondary content">
-            <a
-              class="hero-github"
-              href="https://github.com/tanveerriaz/markdown-ext"
-              target="_blank"
-              rel="noopener noreferrer"
-            >View on GitHub</a>
-            <a class="hero-setup-link" href="#setup-heading">Setup guide ↓</a>
+          <div class="meta-line">
+            <span>v1.2.5</span>
+            <span class="dot">Free forever</span>
+            <span class="dot">No account</span>
+            <span class="dot">Runs entirely in your browser</span>
           </div>
-          <p class="version-note">v1.2.5 · Free · No account needed</p>
-        </section>
 
-        <section class="section section-features" aria-labelledby="features-heading">
-          <h2 class="section-heading content" id="features-heading">What it does</h2>
-          <div class="features-grid">
-            <article class="feature-card">
-              <div class="feature-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/>
-                  <path d="M5 19l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3z"/>
-                  <path d="M19 13l.5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5.5-1.5z"/>
-                </svg>
-              </div>
-              <h3>Smart Cleanup</h3>
+          <figure class="showcase">
+            <div class="frame">
+              <picture>
+                <source type="image/avif" srcset="./images/showcase/browser-youtube.avif" />
+                <source type="image/webp" srcset="./images/showcase/browser-youtube.webp" />
+                <img
+                  src="./images/showcase/browser-youtube.png"
+                  alt="Markdown Convert open over a YouTube page, showing generated Markdown with title, URL, and page-type header ready to copy or download."
+                  width="1080"
+                  height="608"
+                  decoding="async"
+                />
+              </picture>
+            </div>
+            <figcaption>One click on a live page — the clean Markdown is ready to copy or save.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" id="what">
+        <div class="wrap">
+          <div class="sec-label">What it does</div>
+          <h2 class="sec-title">Three small steps, then it gets out of your way.</h2>
+          <div class="features">
+            <div class="feat">
+              <div class="feat-num">i.</div>
+              <h3>Smart cleanup</h3>
               <p>
-                Strips navigation, cookie banners, and tracking noise. Agent-ready output
+                Strips navigation, sidebars, cookie banners and tracking noise. Agent-ready output
                 includes YAML frontmatter with page context.
               </p>
-            </article>
-            <article class="feature-card">
-              <div class="feature-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2"/>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
-              </div>
-              <h3>One-Click Convert</h3>
+            </div>
+            <div class="feat">
+              <div class="feat-num">ii.</div>
+              <h3>One click</h3>
               <p>
-                Click the extension icon and get clean Markdown instantly. No config,
-                no sign-up, no fuss.
+                Open the popup, press Convert. No configuration, no sign-up, nothing to learn. It just
+                reads the page.
               </p>
-            </article>
-            <article class="feature-card">
-              <div class="feature-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-              </div>
-              <h3>Copy or Download</h3>
+            </div>
+            <div class="feat">
+              <div class="feat-num">iii.</div>
+              <h3>Copy or save</h3>
               <p>
-                Preview your Markdown, copy it to clipboard, or download as a .md file.
-                Your choice.
+                Preview the Markdown, copy it to your clipboard, or download a
+                <code class="inline">.md</code> file with a tidy header on top.
               </p>
-            </article>
+            </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section class="section" aria-labelledby="setup-heading">
-          <h2 class="section-heading content" id="setup-heading">Setup guide</h2>
-          <p class="setup-intro content">
-            Pick your browser below. The zip includes <code>chrome-extension/</code> and
-            <code>firefox-extension.xpi</code> — read <code>START-HERE.txt</code> after unzipping.
+      <section class="section" id="works" style="padding-top: 0">
+        <div class="wrap">
+          <div class="sec-label">Works everywhere</div>
+          <h2 class="sec-title" style="margin-bottom: 36px">Articles, docs, YouTube, repositories — anything.</h2>
+          <figure class="showcase" style="margin-top: 0">
+            <div class="frame">
+              <picture>
+                <source type="image/avif" srcset="./images/showcase/browser-github.avif" />
+                <source type="image/webp" srcset="./images/showcase/browser-github.webp" />
+                <img
+                  src="./images/showcase/browser-github.png"
+                  alt="Markdown Convert on a GitHub repository page with the popup showing converted Markdown and YAML header."
+                  width="1080"
+                  height="608"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
+            </div>
+            <figcaption>
+              The same one click on a GitHub repo. The header notes title, URL, and page type for AI
+              tools.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" id="setup">
+        <div class="wrap">
+          <div class="sec-label">Setup guide</div>
+          <h2 class="sec-title">Installed in under a minute.</h2>
+          <p class="sec-intro">
+            Pick your browser. The download includes <code class="inline">chrome-extension/</code> and
+            <code class="inline">firefox-extension.xpi</code> — read
+            <code class="inline">START-HERE.txt</code> after unzipping.
           </p>
-          <nav class="setup-nav content" aria-label="Setup by browser">
-            <a href="#chrome-setup">
-              <img class="brand-icon" src="./images/brands/google-chrome.svg" alt="" width="18" height="18" aria-hidden="true" />
-              Chrome / Edge / Brave
+          <nav class="pills" aria-label="Setup by browser">
+            <a class="pill active" href="#chrome-setup">
+              <svg viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 24L4.95 13A22 22 0 0 1 43.05 13Z" />
+                <path fill="#34A853" d="M24 24L4.95 13A22 22 0 0 0 24 46Z" />
+                <path fill="#FBBC05" d="M24 24L43.05 13A22 22 0 0 1 24 46Z" />
+                <circle cx="24" cy="24" r="10.5" fill="#fff" />
+                <circle cx="24" cy="24" r="8.3" fill="#4285F4" />
+              </svg>
+              Chrome · Edge · Brave
             </a>
-            <a href="#firefox-setup">
-              <img class="brand-icon" src="./images/brands/firefox.svg" alt="" width="18" height="18" aria-hidden="true" />
+            <a class="pill" href="#firefox-setup">
+              <img
+                class="bicon"
+                src="./images/showcase/firefox.png"
+                alt=""
+                width="15"
+                height="15"
+                decoding="async"
+                aria-hidden="true"
+              />
               Firefox
             </a>
-            <a href="https://github.com/tanveerriaz/markdown-ext/blob/main/docs/SETUP.md" target="_blank" rel="noopener noreferrer">Full guide</a>
+            <a
+              class="pill"
+              href="https://github.com/tanveerriaz/markdown-ext/blob/main/docs/SETUP.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Full guide</a
+            >
           </nav>
 
-          <div class="zip-tree content" aria-label="Zip folder structure">
-            <div class="zip-tree-root">markdown-ext/</div>
-            <div class="zip-tree-line zip-tree-chrome">
-              <span class="zip-tree-name">chrome-extension/</span>
-              <span class="zip-tree-label">Chrome · Edge · Brave</span>
-            </div>
-            <div class="zip-tree-line zip-tree-firefox">
-              <span class="zip-tree-name">firefox-extension.xpi</span>
-              <span class="zip-tree-label">Firefox · about:debugging</span>
-            </div>
-            <div class="zip-tree-line">
-              <span class="zip-tree-name">START-HERE.txt</span>
-            </div>
+          <div class="tree" aria-label="Zip folder structure">
+            <span class="root">markdown-ext/</span>
+            chrome-extension/<span class="tag">Chrome · Edge · Brave</span>
+            firefox-extension.xpi<span class="tag">Firefox · about:debugging</span>
+            <span class="muted">START-HERE.txt</span>
           </div>
 
-          <div class="setup-guide">
-            <section class="setup-browser setup-browser-chrome" id="chrome-setup" aria-labelledby="chrome-setup-heading">
-              <h3 class="setup-browser-heading" id="chrome-setup-heading">
-                <img class="brand-icon brand-icon--md" src="./images/brands/google-chrome.svg" alt="" width="28" height="28" aria-hidden="true" />
-                Chrome / Edge / Brave
-              </h3>
-              <article class="setup-step" id="chrome-step-1">
-                <h3><span class="step-num">1</span> Download and unzip</h3>
+          <div class="steps" id="chrome-setup">
+            <div class="step" id="chrome-step-1">
+              <div class="step-n">1</div>
+              <div>
+                <h4>Download and unzip</h4>
                 <p>
                   Click <strong>Chrome extension</strong> above. Unzip and open the
-                  <code>chrome-extension/</code> folder (contains <code>manifest.json</code>).
+                  <code class="inline">chrome-extension/</code> folder (contains
+                  <code class="inline">manifest.json</code>).
                 </p>
-                <figure>
+                <div class="shot">
                   <picture>
                     <source type="image/avif" srcset="./images/setup/07-zip-contents.avif" />
                     <source type="image/webp" srcset="./images/setup/07-zip-contents.webp" />
@@ -1295,13 +795,17 @@
                       decoding="async"
                     />
                   </picture>
-                  <figcaption>Open the blue <strong>chrome-extension</strong> folder — not the .xpi file.</figcaption>
-                </figure>
-              </article>
-              <article class="setup-step">
-                <h3><span class="step-num">2</span> Enable Developer mode</h3>
-                <p>Open <code>chrome://extensions</code> and turn on Developer mode (top-right).</p>
-                <figure>
+                </div>
+                <p class="caption">Open the <strong>chrome-extension</strong> folder — not the .xpi file.</p>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-n">2</div>
+              <div>
+                <h4>Enable Developer mode</h4>
+                <p>Open <code class="inline">chrome://extensions</code> and turn on Developer mode (top-right).</p>
+                <div class="shot">
                   <picture>
                     <source type="image/avif" srcset="./images/setup/02-developer-mode.avif" />
                     <source type="image/webp" srcset="./images/setup/02-developer-mode.webp" />
@@ -1314,15 +818,20 @@
                       decoding="async"
                     />
                   </picture>
-                  <figcaption>Developer mode toggle — top right of the Extensions page.</figcaption>
-                </figure>
-              </article>
-              <article class="setup-step">
-                <h3><span class="step-num">3</span> Load unpacked</h3>
+                </div>
+                <p class="caption">Developer mode toggle — top right of the Extensions page.</p>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-n">3</div>
+              <div>
+                <h4>Load unpacked</h4>
                 <p>
-                  Click <strong>Load unpacked</strong> and select the <code>chrome-extension</code> folder.
+                  Click <strong>Load unpacked</strong> and select the
+                  <code class="inline">chrome-extension</code> folder.
                 </p>
-                <figure>
+                <div class="shot">
                   <picture>
                     <source type="image/avif" srcset="./images/setup/03-load-unpacked.avif" />
                     <source type="image/webp" srcset="./images/setup/03-load-unpacked.webp" />
@@ -1335,157 +844,195 @@
                       decoding="async"
                     />
                   </picture>
-                  <figcaption>Select the folder that contains <code>manifest.json</code>.</figcaption>
-                </figure>
-              </article>
-              <article class="setup-step">
-                <h3><span class="step-num">4</span> Convert any page</h3>
-                <p>
-                  Visit a page, open the extension, click Convert, then copy or download Markdown.
-                  See <a href="#after-install">After install</a> for a preview of the popup.
-                </p>
-              </article>
-              <p class="tip tip-chrome">
-                <strong>Tip:</strong> On some Chrome versions you can drag the <code>chrome-extension</code> folder onto
-                <code>chrome://extensions</code>.
-              </p>
-            </section>
-
-            <details class="setup-browser setup-browser-firefox setup-browser-details" id="firefox-setup">
-              <summary class="setup-browser-heading" id="firefox-setup-heading">
-                <img class="brand-icon brand-icon--md" src="./images/brands/firefox.svg" alt="" width="28" height="28" aria-hidden="true" decoding="async" />
-                Firefox
-              </summary>
-              <div class="setup-browser-inner">
-                <div class="setup-warning" role="note">
-                  <p class="setup-warning-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                      <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                    </svg>
-                    Install via about:debugging only
-                  </p>
-                  <ul class="setup-warning-list">
-                    <li>Use <code>about:debugging</code>, not <code>about:addons</code> (unsigned extensions show “corrupt” there).</li>
-                    <li>Download the <strong>Firefox extension</strong> button above only to save the file — load it from the debugging dialog.</li>
-                    <li>In the file picker, choose <strong>All Files</strong>, then <code>chrome-extension/manifest.json</code> or <code>firefox-extension.xpi</code>.</li>
-                  </ul>
                 </div>
-                <article class="setup-step">
-                  <h3><span class="step-num">1</span> Download and unzip</h3>
-                  <p>
-                    Same zip as Chrome — see <a href="#chrome-step-1">Chrome step 1</a>. You need
-                    <code>chrome-extension/manifest.json</code> or <code>firefox-extension.xpi</code> from the unzipped folder.
-                  </p>
-                </article>
-                <article class="setup-step">
-                  <h3><span class="step-num">2</span> Open about:debugging</h3>
-                  <p>
-                    In the address bar, open <code>about:debugging</code> → <strong>This Firefox</strong> →
-                    <strong>Load Temporary Add-on…</strong>
-                  </p>
-                  <figure>
-                    <picture>
-                      <source type="image/avif" srcset="./images/setup/05-firefox-debugging.avif" />
-                      <source type="image/webp" srcset="./images/setup/05-firefox-debugging.webp" />
-                      <img
-                        src="./images/setup/05-firefox-debugging.png"
-                        alt="Firefox about:debugging page with Load Temporary Add-on button"
-                        width="720"
-                        height="405"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </picture>
-                    <figcaption>Type <code>about:debugging</code> in the address bar — not <code>about:addons</code>.</figcaption>
-                  </figure>
-                </article>
-                <article class="setup-step">
-                  <h3><span class="step-num">3</span> Select manifest.json</h3>
-                  <p>
-                    Set the file picker to <strong>All Files</strong>, open <code>chrome-extension/</code>, and
-                    select <code>manifest.json</code> (or pick <code>firefox-extension.xpi</code> from the zip root).
-                  </p>
-                  <figure>
-                    <picture>
-                      <source type="image/avif" srcset="./images/setup/06-firefox-manifest.avif" />
-                      <source type="image/webp" srcset="./images/setup/06-firefox-manifest.webp" />
-                      <img
-                        src="./images/setup/06-firefox-manifest.png"
-                        alt="File picker with All Files format and manifest.json selected"
-                        width="720"
-                        height="405"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </picture>
-                    <figcaption>All Files → <code>manifest.json</code> inside <code>chrome-extension/</code>.</figcaption>
-                  </figure>
-                </article>
-                <article class="setup-step">
-                  <h3><span class="step-num">4</span> Convert any page</h3>
-                  <p>
-                    Visit a page, open the extension, click Convert, then copy or download Markdown.
-                    See <a href="#after-install">After install</a> for the popup preview.
-                  </p>
-                </article>
-                <p class="tip tip-firefox">
-                  <strong>Tip:</strong> Grayed files? Use <strong>All Files</strong> in the picker.
-                  “Not been verified”? You opened <code>about:addons</code> — use <code>about:debugging</code> instead.
-                  The add-on is removed when you fully quit Firefox.
+                <p class="caption">Select the folder that contains <code class="inline">manifest.json</code>.</p>
+                <p class="tip">
+                  <strong>Tip:</strong> On some Chrome versions you can drag the
+                  <code class="inline">chrome-extension</code> folder onto
+                  <code class="inline">chrome://extensions</code>.
                 </p>
               </div>
-            </details>
+            </div>
 
-            <section class="setup-after-install content" id="after-install" aria-labelledby="after-install-heading">
-              <h3 id="after-install-heading">After install</h3>
-              <p>Chrome and Firefox use the same popup — convert any page, then copy or download Markdown.</p>
-              <figure>
-                <picture>
-                  <source type="image/avif" srcset="./images/setup/04-convert-popup.avif" />
-                  <source type="image/webp" srcset="./images/setup/04-convert-popup.webp" />
-                  <img
-                    src="./images/setup/04-convert-popup.png"
-                    alt="Markdown Convert popup showing YAML frontmatter and preview"
-                    width="720"
-                    height="405"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </picture>
-                <figcaption>Extension popup with preview and copy/download actions.</figcaption>
-              </figure>
-            </section>
+            <div class="step">
+              <div class="step-n">4</div>
+              <div>
+                <h4>Convert any page</h4>
+                <p>
+                  Visit a page, open the extension, click Convert, then copy or download Markdown.
+                  See <a href="#after-install">After install</a> for the popup preview.
+                </p>
+              </div>
+            </div>
           </div>
-        </section>
-      </main>
-    </div>
 
-    <footer class="footer">
-      <p class="footer-brand">Curious mind. Builder mode.</p>
-      <p class="footer-made">Made with ☕ by Tanveer Riaz</p>
-      <nav class="footer-links" aria-label="Footer">
-        <a href="https://github.com/tanveerriaz/markdown-ext" target="_blank" rel="noopener noreferrer">GitHub</a>
-        <span aria-hidden="true">·</span>
-        <a href="https://github.com/tanveerriaz/markdown-ext/blob/main/docs/SETUP.md" target="_blank" rel="noopener noreferrer">Setup guide</a>
-        <span aria-hidden="true">·</span>
-        <a href="https://github.com/tanveerriaz" target="_blank" rel="noopener noreferrer">Other tools</a>
-      </nav>
-      <p class="footer-trademarks">
-        Google Chrome and Firefox logos are trademarks of their respective owners.
-        <a href="https://github.com/tanveerriaz/markdown-ext/blob/main/TRADEMARKS.md">Trademark notice</a>
-      </p>
-      <p class="footer-copy">© <span id="year"></span> Tanveer Riaz</p>
+          <details class="firefox-block" id="firefox-setup">
+            <summary>
+              <img
+                class="bicon"
+                src="./images/showcase/firefox.png"
+                alt=""
+                width="22"
+                height="22"
+                decoding="async"
+                aria-hidden="true"
+              />
+              Firefox
+            </summary>
+            <div class="firefox-inner">
+              <div class="setup-warning" role="note">
+                <p class="setup-warning-title">Install via about:debugging only</p>
+                <ul>
+                  <li>
+                    Use <code class="inline">about:debugging</code>, not
+                    <code class="inline">about:addons</code> (unsigned extensions show “corrupt” there).
+                  </li>
+                  <li>
+                    Download <strong>Firefox extension</strong> above only to save the file — load it from
+                    the debugging dialog.
+                  </li>
+                  <li>
+                    In the file picker, choose <strong>All Files</strong>, then
+                    <code class="inline">chrome-extension/manifest.json</code> or
+                    <code class="inline">firefox-extension.xpi</code>.
+                  </li>
+                </ul>
+              </div>
+
+              <div class="steps" style="margin-top: 0">
+                <div class="step">
+                  <div class="step-n">1</div>
+                  <div>
+                    <h4>Download and unzip</h4>
+                    <p>
+                      Same zip as Chrome — see <a href="#chrome-step-1">Chrome step 1</a>. You need
+                      <code class="inline">chrome-extension/manifest.json</code> or
+                      <code class="inline">firefox-extension.xpi</code> from the unzipped folder.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="step">
+                  <div class="step-n">2</div>
+                  <div>
+                    <h4>Open about:debugging</h4>
+                    <p>
+                      Open <code class="inline">about:debugging</code> → <strong>This Firefox</strong> →
+                      <strong>Load Temporary Add-on…</strong>
+                    </p>
+                    <div class="shot">
+                      <picture>
+                        <source type="image/avif" srcset="./images/setup/05-firefox-debugging.avif" />
+                        <source type="image/webp" srcset="./images/setup/05-firefox-debugging.webp" />
+                        <img
+                          src="./images/setup/05-firefox-debugging.png"
+                          alt="Firefox about:debugging page with Load Temporary Add-on button"
+                          width="720"
+                          height="405"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </picture>
+                    </div>
+                    <p class="caption">Type <code class="inline">about:debugging</code> — not <code class="inline">about:addons</code>.</p>
+                  </div>
+                </div>
+
+                <div class="step">
+                  <div class="step-n">3</div>
+                  <div>
+                    <h4>Select manifest.json</h4>
+                    <p>
+                      Set the file picker to <strong>All Files</strong>, open
+                      <code class="inline">chrome-extension/</code>, and select
+                      <code class="inline">manifest.json</code> (or pick
+                      <code class="inline">firefox-extension.xpi</code> from the zip root).
+                    </p>
+                    <div class="shot">
+                      <picture>
+                        <source type="image/avif" srcset="./images/setup/06-firefox-manifest.avif" />
+                        <source type="image/webp" srcset="./images/setup/06-firefox-manifest.webp" />
+                        <img
+                          src="./images/setup/06-firefox-manifest.png"
+                          alt="File picker with All Files format and manifest.json selected"
+                          width="720"
+                          height="405"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </picture>
+                    </div>
+                    <p class="caption">
+                      All Files → <code class="inline">manifest.json</code> inside
+                      <code class="inline">chrome-extension/</code>.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="step">
+                  <div class="step-n">4</div>
+                  <div>
+                    <h4>Convert any page</h4>
+                    <p>
+                      Visit a page, open the extension, click Convert, then copy or download Markdown.
+                      See <a href="#after-install">After install</a> for the popup preview.
+                    </p>
+                    <p class="tip">
+                      <strong>Tip:</strong> Grayed files? Use <strong>All Files</strong>. “Not been
+                      verified”? You opened <code class="inline">about:addons</code> — use
+                      <code class="inline">about:debugging</code>. The add-on is removed when you fully quit
+                      Firefox.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <section class="after-install" id="after-install" aria-labelledby="after-install-heading">
+            <h4 id="after-install-heading">After install</h4>
+            <p style="font-size: 15.5px; color: var(--ink-soft); max-width: 56ch; margin-bottom: 16px">
+              Chrome and Firefox use the same popup — convert any page, then copy or download Markdown.
+            </p>
+            <div class="shot">
+              <picture>
+                <source type="image/avif" srcset="./images/setup/04-convert-popup.avif" />
+                <source type="image/webp" srcset="./images/setup/04-convert-popup.webp" />
+                <img
+                  src="./images/setup/04-convert-popup.png"
+                  alt="Markdown Convert popup showing YAML frontmatter and preview"
+                  width="720"
+                  height="405"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
+            </div>
+            <p class="caption">Extension popup with preview and copy/download actions.</p>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site">
+      <div class="wrap">
+        <p class="foot-top">Curious mind. Builder mode.</p>
+        <nav class="foot-links" aria-label="Footer">
+          <a href="https://github.com/tanveerriaz/markdown-ext" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="#setup">Setup guide</a>
+          <a href="https://github.com/tanveerriaz" target="_blank" rel="noopener noreferrer">Other tools</a>
+        </nav>
+        <p class="foot-fine">
+          Made by Tanveer Riaz · © <span id="year"></span>. Google Chrome and Firefox logos are trademarks of
+          their respective owners.
+          <a href="https://github.com/tanveerriaz/markdown-ext/blob/main/TRADEMARKS.md">Trademark notice</a>.
+          Everything runs locally in your browser — pages are never uploaded.
+        </p>
+      </div>
     </footer>
 
     <script>
       document.getElementById("year").textContent = new Date().getFullYear();
-
-      const topbar = document.getElementById("topbar");
-      function onScroll() {
-        topbar.classList.toggle("scrolled", window.scrollY > 8);
-      }
-      window.addEventListener("scroll", onScroll, { passive: true });
-      onScroll();
     </script>
   </body>
 </html>
