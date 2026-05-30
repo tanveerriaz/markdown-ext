@@ -179,7 +179,6 @@
         height: 80px;
         margin-bottom: 20px;
         border-radius: 20px;
-        background: linear-gradient(145deg, var(--muted-teal) 0%, var(--wisteria-blue) 100%);
         box-shadow: var(--shadow-md);
       }
 
@@ -992,7 +991,13 @@
         <section class="hero content">
           <div class="hero-logo" aria-hidden="true">
             <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="48" height="48" rx="12" fill="#8AA399"/>
+              <defs>
+                <linearGradient id="hero-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#7c3aed"/>
+                  <stop offset="100%" stop-color="#22c55e"/>
+                </linearGradient>
+              </defs>
+              <rect width="48" height="48" rx="12" fill="url(#hero-grad)"/>
               <text
                 x="24"
                 y="33"
@@ -1060,7 +1065,7 @@
               <span><strong>Firefox:</strong> only <code>about:debugging</code> — not the Add-ons page</span>
             </div>
           </div>
-          <p class="version-note">v1.2.4 · Free · No account needed</p>
+          <p class="version-note">v1.2.5 · Free · No account needed</p>
         </section>
 
         <section class="section section-features" aria-labelledby="features-heading">
