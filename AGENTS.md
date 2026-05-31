@@ -7,6 +7,7 @@
 - Prefer real install screenshots over HTML mocks in setup documentation.
 - Keep Chrome and Firefox setup documentation separate on the landing page for clarity.
 - Keep setup screenshots and install assets consistent across the landing page and `docs/SETUP.md`.
+- When the user says **my tagline**, use exactly: `Curious mind. Builder mode! 🇸🇬` (exclamation mark and 🇸🇬 flag included).
 
 ## Learned Workspace Facts
 - The workspace repo is connected to `https://github.com/tanveerriaz/markdown-ext.git`.
@@ -16,4 +17,4 @@
 - Chrome · Edge · Brave share one Chromium extension package (`chrome-extension/`) — a marketing label, not separate builds.
 - Firefox install uses `about:debugging` → Load Temporary Add-on → `chrome-extension/manifest.json` with the file picker set to All Files; not `about:addons`.
 - Landing images are optimized via `landing/scripts/optimize-landing-images.mjs` (setup 720px, showcase 1080px) in the deploy workflow.
-- Tool landing pages follow the Manuscript template from My Tools.zip with brand line "Curious mind. Builder mode." by Tanveer Riaz, deployed on Cloudflare Pages.
+- Tool landing pages follow the Manuscript template from My Tools.zip with brand line "Curious mind. Builder mode! 🇸🇬" by Tanveer Riaz, deployed on Cloudflare Pages.
