@@ -1,4 +1,7 @@
 const MIN_TEXT_LENGTH = 80;
+const AUGMENT_MIN_BLOCK_CHARS = 40;
+const MAX_CROSS_ORIGIN_IFRAME_STUBS = 20;
+const MAX_SHADOW_DEPTH = 3;
 const HOMEPAGE_SUBSECTION_MIN_CHARS = 15000;
 const HOMEPAGE_SUBSECTION_MIN_RATIO = 0.3;
 
@@ -165,11 +168,291 @@ function removeShallowNavLists(root) {
   }
 }
 
+const AUGMENT_REMOVE_SELECTORS = GENERIC_REMOVE_SELECTORS.filter((s) => s !== "iframe");
+
+const VISIBLE_REGION_SELECTORS = [
+  "main",
+  '[role="main"]',
+  "article",
+  "section",
+  ".content",
+  "#content",
+];
+
 /** @param {ParentNode} root */
 function applyGenericCleanup(root) {
   removeBySelectors(root, GENERIC_REMOVE_SELECTORS);
   removeShallowNavLists(root);
   removeEmptyAnchors(root);
+}
+
+/** @param {ParentNode} root */
+function applyAugmentCleanup(root) {
+  removeBySelectors(root, AUGMENT_REMOVE_SELECTORS);
+  removeShallowNavLists(root);
+  removeEmptyAnchors(root);
+}
+
+/** @param {string} text */
+function normalizeTextForDedup(text) {
+  return String(text || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * @param {string} blockText
+ * @param {string} coreText
+ */
+function isDuplicateOfCore(blockText, coreText) {
+  const block = normalizeTextForDedup(blockText);
+  const core = normalizeTextForDedup(coreText);
+  if (block.length < AUGMENT_MIN_BLOCK_CHARS) return true;
+  if (!core) return false;
+  if (core.includes(block)) return true;
+  if (block.length > 200 && core.length > 200 && block.includes(core.slice(0, 500))) {
+    return true;
+  }
+
+  const words = block.split(/\s+/).filter((w) => w.length > 3);
+  if (words.length < 8) return core.includes(block);
+
+  let hits = 0;
+  for (const word of words) {
+    if (core.includes(word)) hits += 1;
+  }
+  return hits / words.length > 0.85;
+}
+
+/** @param {Element} el */
+function isElementVisible(el) {
+  if (!(el instanceof Element)) return false;
+  if (el.closest('[hidden], [aria-hidden="true"]')) return false;
+
+  const style = getComputedStyle(el);
+  if (style.display === "none" || style.visibility === "hidden") return false;
+  if (Number(style.opacity) === 0) return false;
+
+  const rect = el.getBoundingClientRect();
+  return rect.width > 0 && rect.height > 0;
+}
+
+/** @param {HTMLIFrameElement} iframe */
+function describeIframeStub(iframe) {
+  const src = iframe.src || iframe.getAttribute("src") || "";
+  const label =
+    iframe.title?.trim() ||
+    iframe.getAttribute("aria-label")?.trim() ||
+    iframe.name?.trim() ||
+    "Embedded frame";
+  const safeSrc = escapeHtml(src || "(no URL)");
+  const safeLabel = escapeHtml(label);
+  if (src) {
+    return `<p><strong>Embedded frame:</strong> <a href="${safeSrc}">${safeLabel}</a></p>`;
+  }
+  return `<p><strong>Embedded frame:</strong> ${safeLabel}</p>`;
+}
+
+/** @param {Document} doc */
+function canAccessIframeDocument(iframe) {
+  try {
+    const childDoc = iframe.contentDocument;
+    return Boolean(childDoc?.body && getTextLength(childDoc.body) >= AUGMENT_MIN_BLOCK_CHARS);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * @param {string} coreText
+ * @returns {{ html: string, source: string }[]}
+ */
+function collectAugmentBlocks(coreText) {
+  /** @type {{ html: string, source: string }[]} */
+  const blocks = [];
+  const doc = document;
+
+  // Open shadow roots
+  const shadowHost = document.createElement("div");
+  shadowHost.setAttribute("data-source", "shadow");
+  let shadowCount = 0;
+
+  const visitShadow = (root, depth) => {
+    if (depth > MAX_SHADOW_DEPTH) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+    let node = walker.nextNode();
+    while (node) {
+      if (node instanceof Element && node.shadowRoot) {
+        const clone = document.createElement("div");
+        clone.appendChild(node.shadowRoot.cloneNode(true));
+        applyAugmentCleanup(clone);
+        const text = (clone.textContent || "").replace(/\s+/g, " ").trim();
+        if (
+          text.length >= AUGMENT_MIN_BLOCK_CHARS &&
+          !isDuplicateOfCore(text, coreText)
+        ) {
+          const wrap = document.createElement("div");
+          wrap.setAttribute("data-shadow-host", node.tagName.toLowerCase());
+          wrap.appendChild(clone);
+          shadowHost.appendChild(wrap);
+          shadowCount += 1;
+        }
+        visitShadow(node.shadowRoot, depth + 1);
+      }
+      node = walker.nextNode();
+    }
+  };
+
+  if (doc.body) visitShadow(doc.body, 0);
+  if (shadowCount > 0) {
+    blocks.push({ html: shadowHost.innerHTML, source: "shadow" });
+  }
+
+  // Same-origin iframe bodies
+  for (const iframe of doc.querySelectorAll("iframe")) {
+    if (!isElementVisible(iframe)) continue;
+    if (!canAccessIframeDocument(iframe)) continue;
+
+    try {
+      const childDoc = iframe.contentDocument;
+      if (!childDoc?.body) continue;
+      const clone = document.createElement("div");
+      clone.appendChild(childDoc.body.cloneNode(true));
+      applyAugmentCleanup(clone);
+      const text = (clone.textContent || "").replace(/\s+/g, " ").trim();
+      if (text.length < AUGMENT_MIN_BLOCK_CHARS || isDuplicateOfCore(text, coreText)) {
+        continue;
+      }
+      const src = iframe.src || "";
+      blocks.push({
+        html: `<h3>Embedded frame</h3><p>Source: <a href="${escapeHtml(src)}">${escapeHtml(src)}</a></p>${clone.innerHTML}`,
+        source: "iframe",
+      });
+    } catch {
+      // Cross-origin or sandboxed.
+    }
+  }
+
+  // Visible regions not fully captured
+  for (const selector of VISIBLE_REGION_SELECTORS) {
+    try {
+      doc.querySelectorAll(selector).forEach((el) => {
+        if (!(el instanceof HTMLElement) || !isElementVisible(el)) return;
+        if (getTextLength(el) < 120) return;
+
+        const clone = el.cloneNode(true);
+        applyAugmentCleanup(clone);
+        const text = (clone.textContent || "").replace(/\s+/g, " ").trim();
+        if (text.length < AUGMENT_MIN_BLOCK_CHARS || isDuplicateOfCore(text, coreText)) {
+          return;
+        }
+
+        blocks.push({
+          html: clone.innerHTML,
+          source: "visible",
+        });
+      });
+    } catch {
+      // Skip invalid selectors.
+    }
+  }
+
+  // Visible form fields (labels + values)
+  const formParts = [];
+  doc.querySelectorAll("input, select, textarea").forEach((field) => {
+    if (!(field instanceof HTMLElement) || !isElementVisible(field)) return;
+    const type = (field.getAttribute("type") || "").toLowerCase();
+    if (type === "password" || type === "hidden") return;
+
+    let label = "";
+    const id = field.id;
+    if (id) {
+      const safeId = id.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      const labelEl = doc.querySelector(`label[for="${safeId}"]`);
+      label = labelEl?.textContent?.trim() || "";
+    }
+    if (!label) {
+      label = field.getAttribute("aria-label")?.trim() || field.getAttribute("name") || "";
+    }
+
+    let value = "";
+    if (field instanceof HTMLSelectElement) {
+      value = field.options[field.selectedIndex]?.text?.trim() || "";
+    } else if (field instanceof HTMLInputElement) {
+      if (field.type === "checkbox" || field.type === "radio") {
+        value = field.checked ? "checked" : "unchecked";
+      } else {
+        value = field.value?.trim() || "";
+      }
+    } else if (field instanceof HTMLTextAreaElement) {
+      value = field.value?.trim() || "";
+    }
+
+    if (!label && !value) return;
+    formParts.push(
+      `<li><strong>${escapeHtml(label || "Field")}:</strong> ${escapeHtml(value || "—")}</li>`,
+    );
+  });
+
+  if (formParts.length > 0) {
+    const formHtml = `<h3>Form fields</h3><ul>${formParts.join("")}</ul>`;
+    if (!isDuplicateOfCore(formHtml, coreText)) {
+      blocks.push({ html: formHtml, source: "forms" });
+    }
+  }
+
+  // Cross-origin iframe stubs
+  const stubParts = [];
+  let stubCount = 0;
+  for (const iframe of doc.querySelectorAll("iframe")) {
+    if (stubCount >= MAX_CROSS_ORIGIN_IFRAME_STUBS) break;
+    if (!isElementVisible(iframe)) continue;
+    if (canAccessIframeDocument(iframe)) continue;
+    stubParts.push(describeIframeStub(iframe));
+    stubCount += 1;
+  }
+
+  if (stubParts.length > 0) {
+    blocks.push({
+      html: `<section class="embedded-frames"><h3>Embedded frames (external)</h3>${stubParts.join("")}</section>`,
+      source: "iframe_stub",
+    });
+  }
+
+  return blocks;
+}
+
+/**
+ * @param {string} coreHtml
+ * @param {string} coreText
+ * @param {{ html: string, source: string }[]} augmentBlocks
+ * @param {string[]} sources
+ */
+function mergeCoreAndAugment(coreHtml, coreText, augmentBlocks, sources) {
+  const merged = document.createElement("div");
+  merged.className = "markdown-ext-root";
+  if (coreHtml) merged.innerHTML = coreHtml;
+
+  const seenSources = new Set(sources);
+
+  for (const block of augmentBlocks) {
+    if (!block.html?.trim()) continue;
+    const blockText = block.html.replace(/<[^>]+>/g, " ");
+    if (isDuplicateOfCore(blockText, coreText)) continue;
+
+    const section = document.createElement("section");
+    section.className = "md-ext-augment";
+    section.setAttribute("data-source", block.source);
+    section.innerHTML = block.html;
+    merged.appendChild(section);
+    seenSources.add(block.source);
+  }
+
+  return {
+    html: merged.innerHTML.trim(),
+    sources: Array.from(seenSources),
+  };
 }
 
 /**
@@ -558,8 +841,70 @@ function extractWithFallback() {
   };
 }
 
-function getCleanBodyHtml() {
+/**
+ * Lightweight extraction for child frames (same-origin / accessible frames).
+ */
+function extractSubFrame() {
   const url = location.href;
+  if (!document.body) {
+    return {
+      html: "",
+      title: "",
+      pageType: "sparse",
+      url,
+      sources: [],
+      isTop: false,
+    };
+  }
+
+  const container = document.createElement("div");
+  container.appendChild(document.body.cloneNode(true));
+  applyAugmentCleanup(container);
+  removeShallowNavLists(container);
+  const html = container.innerHTML.trim();
+  const textLen = getTextLength(container);
+
+  if (textLen < AUGMENT_MIN_BLOCK_CHARS) {
+    return {
+      html: "",
+      title: (document.title || "").trim(),
+      pageType: "sparse",
+      url,
+      sources: [],
+      isTop: false,
+    };
+  }
+
+  return {
+    html,
+    title: (document.title || "").trim(),
+    pageType: "article",
+    url,
+    sources: ["frame"],
+    isTop: false,
+  };
+}
+
+/**
+ * @returns {{
+ *   html: string;
+ *   title: string;
+ *   pageType: string;
+ *   url: string;
+ *   warning?: string;
+ *   sources?: string[];
+ *   error?: string;
+ *   isTop: boolean;
+ *   iframeOrder?: string[];
+ * }}
+ */
+function extractPage() {
+  const url = location.href;
+  const isTop = window === window.top;
+
+  if (!isTop) {
+    return extractSubFrame();
+  }
 
   if (!document.body) {
     return {
@@ -567,52 +912,105 @@ function getCleanBodyHtml() {
       error: "document.body not found",
       url,
       pageType: "sparse",
+      sources: [],
+      isTop: true,
+      iframeOrder: [],
     };
   }
+
+  const iframeOrder = Array.from(document.querySelectorAll("iframe"))
+    .map((f) => {
+      try {
+        return f.src || "";
+      } catch {
+        return "";
+      }
+    })
+    .filter(Boolean);
+
+  /** @type {string[]} */
+  const sources = [];
+  let warning;
+  let coreHtml = "";
+  let title = (document.title || "").trim();
+  let pageType = "sparse";
 
   const youtubeResult = extractYouTube();
   if (youtubeResult?.html) {
-    const { html, title, pageType, warning } = youtubeResult;
+    coreHtml = youtubeResult.html;
+    title = youtubeResult.title || title;
+    pageType = youtubeResult.pageType || "listing";
+    warning = youtubeResult.warning;
+    sources.push("youtube");
+  } else {
+    const readabilityResult = extractWithReadability();
+    if (readabilityResult?.html) {
+      coreHtml = readabilityResult.html;
+      title = readabilityResult.title || title;
+      pageType = readabilityResult.pageType || "article";
+      sources.push("readability");
+      if (pageType === "homepage") warning = HOMEPAGE_WARNING;
+    } else {
+      const fallbackResult = extractWithFallback();
+      if (fallbackResult?.html) {
+        coreHtml = fallbackResult.html;
+        title = fallbackResult.title || title;
+        pageType = fallbackResult.pageType || "article";
+        sources.push("fallback");
+        if (pageType === "homepage") warning = HOMEPAGE_WARNING;
+      }
+    }
+  }
+
+  const coreContainer = coreHtml ? htmlToContainer(coreHtml) : null;
+  const coreText = coreContainer
+    ? (coreContainer.textContent || "").replace(/\s+/g, " ").trim()
+    : "";
+
+  const augmentBlocks = collectAugmentBlocks(coreText);
+  const merged = mergeCoreAndAugment(coreHtml, coreText, augmentBlocks, sources);
+  const finalHtml = merged.html;
+  const finalSources = merged.sources;
+
+  if (!finalHtml || getTextLength(htmlToContainer(finalHtml)) < MIN_TEXT_LENGTH) {
     return {
-      html,
-      title,
-      pageType,
+      html: "",
+      error: "No readable content found",
       url,
-      warning,
+      pageType: "sparse",
+      sources: finalSources,
+      isTop: true,
+      iframeOrder,
     };
   }
 
-  const readabilityResult = extractWithReadability();
-  if (readabilityResult?.html) {
-    const { html, title, pageType } = readabilityResult;
-    return {
-      html,
-      title,
-      pageType,
-      url,
-      warning: pageType === "homepage" ? HOMEPAGE_WARNING : undefined,
-    };
-  }
-
-  const fallbackResult = extractWithFallback();
-  if (fallbackResult?.html) {
-    const { html, title, pageType } = fallbackResult;
-    return {
-      html,
-      title,
-      pageType,
-      url,
-      warning: pageType === "homepage" ? HOMEPAGE_WARNING : undefined,
-    };
+  if (!coreHtml) {
+    pageType = detectPageType(htmlToContainer(finalHtml), document);
+    title = title || (document.title || "").trim();
   }
 
   return {
-    html: "",
-    error: "No readable content found",
+    html: finalHtml,
+    title,
+    pageType,
     url,
-    pageType: "sparse",
+    warning,
+    sources: finalSources,
+    isTop: true,
+    iframeOrder,
   };
 }
+
+/** Entry point for popup executeScript (all frames). */
+function extractFramePayload() {
+  return extractPage();
+}
+
+function getCleanBodyHtml() {
+  return extractPage();
+}
+
+globalThis.markdownConvertExtractFrame = extractFramePayload;
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg?.type === "GET_CLEAN_HTML") {

@@ -7,9 +7,10 @@ Convert any webpage into **clean, agent-ready Markdown** in one click. Built as 
 
 ## Features
 
-- Extracts main content from any site using [Mozilla Readability](https://github.com/mozilla/readability)
+- Extracts main content using [Mozilla Readability](https://github.com/mozilla/readability), plus visible regions, tables, form fields, open shadow DOM, and same-origin embeds when they add value
+- Lists cross-origin embeds (e.g. YouTube players) with links and labels — inner frame content cannot be read by the browser
 - Strips navigation, cookie banners, chat widgets, and tracking noise (generic rules, no per-site config)
-- Outputs **YAML frontmatter** (`title`, `url`, `page_type`, `extracted_at`) for LLM / agent workflows
+- Outputs **YAML frontmatter** (`title`, `url`, `page_type`, `extracted_at`, optional `sources`) for LLM / agent workflows
 - Copy to clipboard or download as `.md`
 
 ## Quick start
@@ -27,7 +28,7 @@ Full illustrated steps (Chrome + Firefox): **[docs/SETUP.md](docs/SETUP.md)**
 ```
 extension/          # Browser extension (load this folder)
   manifest.json
-  content.js          # Readability extraction + cleanup
+  content.js          # Layered extraction (Readability + augment + multi-frame)
   popup.js            # Turndown + agent markdown pass
   readability.min.js
   turndown.min.js

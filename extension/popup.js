@@ -9,6 +9,9 @@ const markdownPreviewEl = document.getElementById("markdownPreview");
 const TRACKING_IMG_RE =
   /bat\.bing\.com|doubleclick|facebook\.com\/tr|google-analytics|\/1x1[./]|pixel\.|tracking/i;
 
+const MAX_OUTPUT_WORDS = 80000;
+const LARGE_PAGE_WARNING = "Large page; output truncated.";
+
 let lastMarkdown = "";
 let lastTitle = "";
 
@@ -58,23 +61,78 @@ function escapeYamlValue(value) {
   return s;
 }
 
+function escapeHtmlAttr(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 /**
- * @param {{ title?: string, url?: string, pageType?: string, extractedAt?: string }} meta
+ * @param {{ title?: string, url?: string, pageType?: string, extractedAt?: string, sources?: string[] }} meta
  */
 function buildFrontmatter(meta) {
-  const title = escapeYamlValue(meta.title || "page");
-  const url = escapeYamlValue(meta.url || "");
-  const pageType = escapeYamlValue(meta.pageType || "article");
-  const extractedAt = escapeYamlValue(meta.extractedAt || new Date().toISOString());
+  const lines = [
+    "---",
+    `title: ${escapeYamlValue(meta.title || "page")}`,
+    `url: ${escapeYamlValue(meta.url || "")}`,
+    `page_type: ${escapeYamlValue(meta.pageType || "article")}`,
+    `extracted_at: ${escapeYamlValue(meta.extractedAt || new Date().toISOString())}`,
+  ];
 
-  return [
-    "---",
-    `title: ${title}`,
-    `url: ${url}`,
-    `page_type: ${pageType}`,
-    `extracted_at: ${extractedAt}`,
-    "---",
-  ].join("\n");
+  const sources = Array.isArray(meta.sources)
+    ? [...new Set(meta.sources.filter(Boolean))]
+    : [];
+  if (sources.length > 0) {
+    lines.push("sources:");
+    for (const source of sources) {
+      lines.push(`  - ${escapeYamlValue(source)}`);
+    }
+  }
+
+  lines.push("---");
+  return lines.join("\n");
+}
+
+function countWordsInHtml(html) {
+  const doc = new DOMParser().parseFromString(`<div>${html}</div>`, "text/html");
+  const text = (doc.body?.textContent || "").replace(/\s+/g, " ").trim();
+  return text ? text.split(/\s+/).filter(Boolean).length : 0;
+}
+
+/**
+ * Trim oversized HTML before Turndown (prefer dropping augment sections first).
+ * @returns {{ html: string, truncated: boolean }}
+ */
+function guardLargeHtml(html) {
+  const doc = new DOMParser().parseFromString(`<div id="root">${html}</div>`, "text/html");
+  const root = doc.getElementById("root");
+  if (!root) return { html, truncated: false };
+
+  let truncated = false;
+
+  const wordCount = () => countWordsInHtml(root.innerHTML);
+
+  while (wordCount() > MAX_OUTPUT_WORDS) {
+    const augment = root.querySelector(".md-ext-augment:last-of-type, section.embedded-frame:last-of-type");
+    if (augment) {
+      augment.remove();
+      truncated = true;
+      continue;
+    }
+    break;
+  }
+
+  if (wordCount() > MAX_OUTPUT_WORDS) {
+    const text = (root.textContent || "").replace(/\s+/g, " ").trim();
+    const words = text.split(/\s+/).filter(Boolean);
+    const trimmed = words.slice(0, MAX_OUTPUT_WORDS).join(" ");
+    root.textContent = `${trimmed}\n\n[… truncated …]`;
+    truncated = true;
+  }
+
+  return { html: root.innerHTML.trim(), truncated };
 }
 
 function collapseDuplicateLinkLabels(text) {
@@ -163,7 +221,7 @@ function collapseLeadingNavBullets(markdown) {
 
 /**
  * @param {string} markdown
- * @param {{ title?: string, url?: string, pageType?: string, extractedAt?: string }} meta
+ * @param {{ title?: string, url?: string, pageType?: string, extractedAt?: string, sources?: string[] }} meta
  */
 function prepareAgentMarkdown(markdown, meta) {
   let body = normalizeMarkdown(markdown);
@@ -201,7 +259,119 @@ function getTurndownService() {
     },
   });
 
+  service.addRule("preserveEmbeddedFramesSection", {
+    filter(node) {
+      return (
+        node.nodeName === "SECTION" &&
+        (node.classList?.contains("embedded-frames") ||
+          node.classList?.contains("embedded-frame"))
+      );
+    },
+    replacement(content) {
+      return `\n\n${content.trim()}\n\n`;
+    },
+  });
+
+  service.addRule("preserveTablesAndCode", {
+    filter(node) {
+      const name = node.nodeName;
+      return name === "TABLE" || name === "PRE" || name === "CODE";
+    },
+    replacement(content, node) {
+      if (node.nodeName === "TABLE") {
+        return `\n\n${content.trim()}\n\n`;
+      }
+      return content;
+    },
+  });
+
   return service;
+}
+
+/**
+ * @param {chrome.scripting.InjectionResult[]} injectionResults
+ * @returns {object | null}
+ */
+function mergeFrameExtractions(injectionResults) {
+  const payloads = injectionResults
+    .map((entry) => entry?.result)
+    .filter((result) => result && typeof result === "object");
+
+  const top = payloads.find((p) => p.isTop);
+  if (!top) return payloads[0] || null;
+  if (top.error && !top.html) return top;
+
+  const iframeOrder = Array.isArray(top.iframeOrder) ? top.iframeOrder : [];
+  const sources = new Set(Array.isArray(top.sources) ? top.sources : []);
+
+  let html = String(top.html || "");
+  const warnings = [top.warning].filter(Boolean);
+
+  const children = payloads
+    .filter((p) => !p.isTop && p.html && String(p.html).trim())
+    .sort((a, b) => {
+      const urlA = String(a.url || "");
+      const urlB = String(b.url || "");
+      const idxA = iframeOrder.indexOf(urlA);
+      const idxB = iframeOrder.indexOf(urlB);
+      if (idxA === -1 && idxB === -1) return urlA.localeCompare(urlB);
+      if (idxA === -1) return 1;
+      if (idxB === -1) return -1;
+      return idxA - idxB;
+    });
+
+  for (const child of children) {
+    const childUrl = String(child.url || "");
+    if (childUrl && html.includes(childUrl)) continue;
+
+    const frameUrl = escapeHtmlAttr(childUrl);
+    const frameTitle = escapeHtmlAttr(child.title || childUrl || "Embedded frame");
+    html += [
+      `<section class="embedded-frame">`,
+      `<h2>Embedded content (frame)</h2>`,
+      `<p>Source: <a href="${frameUrl}">${frameTitle}</a></p>`,
+      String(child.html),
+      `</section>`,
+    ].join("\n");
+    sources.add("frame");
+  }
+
+  return {
+    ...top,
+    html,
+    sources: Array.from(sources),
+    warning: warnings.filter(Boolean).join(" ") || top.warning,
+  };
+}
+
+async function extractFromTab(tabId) {
+  if (chrome.scripting?.executeScript) {
+    try {
+      const results = await chrome.scripting.executeScript({
+        target: { tabId, allFrames: true },
+        world: "ISOLATED",
+        func: () => {
+          if (typeof globalThis.markdownConvertExtractFrame === "function") {
+            return globalThis.markdownConvertExtractFrame();
+          }
+          return {
+            error: "Extraction not available in this frame",
+            html: "",
+            isTop: window === window.top,
+            url: location.href,
+            sources: [],
+          };
+        },
+      });
+
+      const merged = mergeFrameExtractions(results);
+      if (merged?.html || merged?.error) return merged;
+    } catch {
+      // Fall back to single-frame messaging (older Firefox, restricted URLs).
+    }
+  }
+
+  return chrome.tabs.sendMessage(tabId, { type: "GET_CLEAN_HTML" });
 }
 
 async function convertActiveTab() {
@@ -212,14 +382,17 @@ async function convertActiveTab() {
     const tab = await getActiveTab();
     if (!tab?.id) throw new Error("No active tab found.");
 
-    const resp = await chrome.tabs.sendMessage(tab.id, { type: "GET_CLEAN_HTML" });
+    const resp = await extractFromTab(tab.id);
     if (!resp) throw new Error("No response from content script.");
-    if (resp.error) throw new Error(resp.error);
+    if (resp.error && !resp.html) throw new Error(resp.error);
 
     const extractedTitle = String(resp.title || "").trim();
     lastTitle = extractedTitle || tab.title || "page";
 
-    const html = String(resp.html || "");
+    let html = String(resp.html || "");
+    const { html: guardedHtml, truncated } = guardLargeHtml(html);
+    html = guardedHtml;
+
     const turndown = getTurndownService();
     const rawMarkdown = turndown.turndown(html);
 
@@ -228,6 +401,7 @@ async function convertActiveTab() {
       url: tab.url || resp.url || "",
       pageType: resp.pageType || "article",
       extractedAt: new Date().toISOString(),
+      sources: resp.sources,
     });
 
     lastMarkdown = markdown;
@@ -235,9 +409,12 @@ async function convertActiveTab() {
 
     if (postActionsEl) postActionsEl.classList.toggle("hidden", !markdown);
 
-    const warning = String(resp.warning || "").trim();
-    if (warning) {
-      setStatus(warning, true);
+    const warnings = [String(resp.warning || "").trim(), truncated ? LARGE_PAGE_WARNING : ""]
+      .filter(Boolean)
+      .join(" ");
+
+    if (warnings) {
+      setStatus(warnings, true);
     } else {
       setStatus(markdown ? "Ready" : "No content found.");
     }
