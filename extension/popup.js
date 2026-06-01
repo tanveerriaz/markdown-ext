@@ -56,6 +56,9 @@ async function getActiveTab() {
 function formatExtractionError(message) {
   const msg = String(message || "").trim();
   if (msg === "No readable content found") return SPARSE_CONTENT_HINT;
+  if (/extraction not available in this frame/i.test(msg)) {
+    return "Content script not ready. Refresh the page, then convert again.";
+  }
   if (/could not establish connection/i.test(msg)) {
     return "Content script not ready. Refresh the page, then convert again.";
   }
@@ -346,8 +349,25 @@ function mergeFrameExtractions(injectionResults) {
     .filter((result) => result && typeof result === "object");
 
   const top = payloads.find((p) => p.isTop);
-  if (!top) return payloads[0] || null;
-  if (top.error && !top.html) return top;
+  if (!top) {
+    const best = payloads
+      .filter((p) => p.html && String(p.html).trim())
+      .sort((a, b) => String(b.html).length - String(a.html).length)[0];
+    return best || null;
+  }
+  if (top.error && !top.html) {
+    const bestChild = payloads
+      .filter((p) => !p.isTop && p.html && String(p.html).trim())
+      .sort((a, b) => String(b.html).length - String(a.html).length)[0];
+    if (bestChild) {
+      return {
+        ...bestChild,
+        isTop: true,
+        iframeOrder: top.iframeOrder || [],
+      };
+    }
+    return null;
+  }
 
   const iframeOrder = Array.isArray(top.iframeOrder) ? top.iframeOrder : [];
   const sources = new Set(Array.isArray(top.sources) ? top.sources : []);
@@ -414,23 +434,43 @@ async function runFrameExtraction(tabId, allFrames) {
 }
 
 async function extractFromTab(tabId) {
+  /** @type {object | null} */
+  let topPayload = null;
+
+  try {
+    topPayload = await chrome.tabs.sendMessage(tabId, { type: "GET_CLEAN_HTML" });
+  } catch {
+    topPayload = null;
+  }
+
+  if (topPayload?.html) {
+    const iframeOrder = Array.isArray(topPayload.iframeOrder) ? topPayload.iframeOrder : [];
+    if (iframeOrder.length > 0 && chrome.scripting?.executeScript) {
+      try {
+        const withFrames = await runFrameExtraction(tabId, true);
+        if (withFrames?.html) return withFrames;
+      } catch {
+        // Use top-frame payload only.
+      }
+    }
+    return topPayload;
+  }
+
   if (chrome.scripting?.executeScript) {
     try {
-      let merged = await runFrameExtraction(tabId, false);
-      if (merged?.html || merged?.error) {
-        const iframeOrder = Array.isArray(merged.iframeOrder) ? merged.iframeOrder : [];
-        if (iframeOrder.length > 0) {
-          const withFrames = await runFrameExtraction(tabId, true);
-          if (withFrames?.html || withFrames?.error) merged = withFrames;
-        }
-        return merged;
-      }
+      let merged = await runFrameExtraction(tabId, true);
+      if (merged?.html) return merged;
+      merged = await runFrameExtraction(tabId, false);
+      if (merged?.html) return merged;
     } catch {
-      // Fall back to single-frame messaging (older Firefox, restricted URLs).
+      // Fall back to message result or error below.
     }
   }
 
-  return chrome.tabs.sendMessage(tabId, { type: "GET_CLEAN_HTML" });
+  if (topPayload?.error && !topPayload.html) throw new Error(topPayload.error);
+  if (topPayload) return topPayload;
+
+  throw new Error("Content script not ready. Refresh the page, then convert again.");
 }
 
 async function convertActiveTab() {
