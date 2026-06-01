@@ -262,9 +262,22 @@ function unwrapContentButtons(root) {
   }
 }
 
-/** @param {string} text */
-function isSpaEmptyState(text) {
-  return SPA_EMPTY_STATE_RE.test(String(text || ""));
+/**
+ * @param {string} text
+ * @param {Element | null} [el]
+ */
+function isSpaEmptyState(text, el) {
+  const normalized = String(text || "").replace(/\s+/g, " ").trim();
+  if (!SPA_EMPTY_STATE_RE.test(normalized)) return false;
+  if (normalized.length < 200) return true;
+  if (el instanceof Element) {
+    const rowCount = el.querySelectorAll(
+      "button, [role='listitem'], .md-ext-unwrapped-button, ul > li",
+    ).length;
+    if (rowCount >= 3) return false;
+    if (el.querySelector(".email-document, .email-body, article")) return false;
+  }
+  return normalized.length < 600;
 }
 
 /** @param {ParentNode} root @param {number} max */
@@ -306,10 +319,16 @@ function getSpaPanelCandidates() {
     for (const child of main.children) {
       if (child instanceof HTMLElement) add(child);
     }
+    for (const child of main.children) {
+      if (!(child instanceof HTMLElement)) continue;
+      for (const grandchild of child.children) {
+        if (grandchild instanceof HTMLElement) add(grandchild);
+      }
+    }
     if (out.length === 0) add(main);
   }
 
-  document.querySelectorAll("article").forEach((el) => {
+  document.querySelectorAll("article, aside").forEach((el) => {
     if (el instanceof HTMLElement) add(el);
   });
 
@@ -330,7 +349,9 @@ function extractSpaPrimaryPanel() {
       return {
         el,
         score: getTextLength(el),
-        isEmpty: isSpaEmptyState(text),
+        isEmpty: isSpaEmptyState(text, el),
+        hasDocument: Boolean(el.querySelector(".email-document, .email-body, article")),
+        listRows: el.querySelectorAll("ul > li, [role='listitem']").length,
       };
     })
     .filter((entry) => entry.score >= SPA_PANEL_MIN_SCORE)
@@ -338,9 +359,10 @@ function extractSpaPrimaryPanel() {
 
   if (scored.length === 0) return null;
 
-  const detail = scored.find((entry) => !entry.isEmpty);
-  const list = scored.find((entry) => entry !== detail) || scored[0];
-  const pick = detail || list;
+  const documentPanel = scored.find((entry) => entry.hasDocument && !entry.isEmpty);
+  const listPanel = scored.find((entry) => entry.listRows >= 3);
+  const pick =
+    documentPanel || listPanel || scored.find((entry) => !entry.isEmpty) || scored[0];
   if (!pick) return null;
 
   const container = document.createElement("div");
@@ -353,16 +375,66 @@ function extractSpaPrimaryPanel() {
   if (!html || getTextLength(container) < MIN_TEXT_LENGTH) return null;
 
   const listRows = container.querySelectorAll(".md-ext-unwrapped-button, [role='listitem']").length;
-  let pageType = detail ? "article" : "listing";
-  if (!detail && listRows >= 5) pageType = "listing";
+  let pageType = documentPanel ? "article" : "listing";
+  if (!documentPanel && listRows >= 5) pageType = "listing";
 
   let warning;
-  if (!detail && list) warning = SPA_LIST_ONLY_WARNING;
+  if (!documentPanel && (listPanel || pick.listRows >= 3)) warning = SPA_LIST_ONLY_WARNING;
 
   return {
     html,
     title: "",
     pageType,
+    warning,
+  };
+}
+
+/**
+ * Extract the densest email/list column (e.g. MailMind EmailList).
+ * @returns {{ html: string, title: string, pageType: string, warning?: string } | null}
+ */
+function extractStructuredListColumn() {
+  let best = null;
+  let bestRows = 0;
+
+  for (const ul of document.querySelectorAll("main ul, [role='main'] ul")) {
+    const items = ul.querySelectorAll(":scope > li");
+    if (items.length > bestRows) {
+      bestRows = items.length;
+      best = ul;
+    }
+  }
+
+  if (!best || bestRows < 3) return null;
+
+  const listColumn =
+    best.parentElement?.parentElement instanceof HTMLElement
+      ? best.parentElement.parentElement
+      : best.parentElement;
+
+  const container = document.createElement("div");
+  if (listColumn instanceof HTMLElement) {
+    container.appendChild(listColumn.cloneNode(true));
+  } else {
+    container.appendChild(best.cloneNode(true));
+  }
+
+  unwrapContentButtons(container);
+  applyGenericCleanup(container);
+  capSpaListItems(container);
+
+  const html = container.innerHTML.trim();
+  if (!html || getTextLength(container) < MIN_TEXT_LENGTH) return null;
+
+  const previewEmpty = document.querySelector("aside")?.textContent || "";
+  const warning = isSpaEmptyState(previewEmpty, document.querySelector("aside"))
+    ? SPA_LIST_ONLY_WARNING
+    : undefined;
+
+  return {
+    html,
+    title: "",
+    pageType: "listing",
     warning,
   };
 }
@@ -1216,7 +1288,7 @@ function extractPage() {
     warning = youtubeResult.warning;
     sources.push("youtube");
   } else {
-    const spaResult = extractSpaPrimaryPanel();
+    const spaResult = extractSpaPrimaryPanel() || extractStructuredListColumn();
     if (spaResult?.html) {
       coreHtml = spaResult.html;
       title = spaResult.title || title;
