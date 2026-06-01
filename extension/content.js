@@ -4,6 +4,19 @@ const MAX_CROSS_ORIGIN_IFRAME_STUBS = 20;
 const MAX_SHADOW_DEPTH = 3;
 const HOMEPAGE_SUBSECTION_MIN_CHARS = 15000;
 const HOMEPAGE_SUBSECTION_MIN_RATIO = 0.3;
+const LARGE_PAGE_DESCENDANT_THRESHOLD = 8000;
+const LARGE_PAGE_BODY_TEXT_THRESHOLD = 200000;
+const STRONG_CORE_TEXT_THRESHOLD = 500;
+const MAX_VISIBLE_REGION_CLONES = 8;
+const MAX_SECTION_COUNT_FOR_VISIBLE_AUGMENT = 40;
+const READABILITY_ROOT_SELECTORS = ["article", "main", '[role="main"]', "#content", "#main"];
+const MAX_SPA_LIST_ITEMS = 100;
+const MIN_CONTENT_BUTTON_CHARS = 20;
+const SPA_PANEL_MIN_SCORE = 80;
+const SPA_EMPTY_STATE_RE = /select\s+.+\s+to\s+preview/i;
+const SPA_LIST_ONLY_WARNING =
+  "No item open; converted visible list only. Select an email for full body.";
+const SPA_CHROME_ANCESTOR_RE = /toolbar|header|nav|sync|filter|masthead|sidebar-menu/i;
 
 const PRE_STRIP_SELECTORS = [
   '[id*="onetrust" i]',
@@ -32,7 +45,6 @@ const GENERIC_REMOVE_SELECTORS = [
   "aside",
   "dialog",
   "form",
-  "button",
   "svg",
   "input",
   "select",
@@ -122,6 +134,30 @@ function hasMeaningfulText(el) {
   return getTextLength(el) >= MIN_TEXT_LENGTH;
 }
 
+/** @param {ParentNode | null} root */
+function countElementDescendants(root) {
+  if (!root) return 0;
+  return root.querySelectorAll("*").length;
+}
+
+function isLargeDocument() {
+  if (!document.body) return false;
+  return (
+    countElementDescendants(document.body) > LARGE_PAGE_DESCENDANT_THRESHOLD ||
+    getTextLength(document.body) > LARGE_PAGE_BODY_TEXT_THRESHOLD
+  );
+}
+
+/** @param {string} coreText */
+function hasStrongCoreContent(coreText) {
+  return String(coreText || "").length >= STRONG_CORE_TEXT_THRESHOLD;
+}
+
+/** @param {string} coreText */
+function shouldUseLiteAugment(coreText) {
+  return isLargeDocument() || hasStrongCoreContent(coreText);
+}
+
 /** @param {ParentNode} root @param {string[]} selectors */
 function removeBySelectors(root, selectors) {
   for (const selector of selectors) {
@@ -179,8 +215,161 @@ const VISIBLE_REGION_SELECTORS = [
   "#content",
 ];
 
+/** @param {Element} el */
+function isInChromeToolbar(el) {
+  let node = el.parentElement;
+  while (node) {
+    const role = node.getAttribute?.("role")?.toLowerCase() || "";
+    if (role === "toolbar" || role === "navigation" || role === "banner") return true;
+    const tag = node.tagName?.toLowerCase() || "";
+    if (tag === "header" || tag === "nav") return true;
+    const hint = `${node.id || ""} ${typeof node.className === "string" ? node.className : ""}`;
+    if (SPA_CHROME_ANCESTOR_RE.test(hint)) return true;
+    node = node.parentElement;
+  }
+  return false;
+}
+
+/** @param {HTMLButtonElement} button */
+function getButtonLabel(button) {
+  const aria = button.getAttribute("aria-label")?.trim() || "";
+  const text = (button.textContent || "").replace(/\s+/g, " ").trim();
+  return aria.length > text.length ? aria : text;
+}
+
+/** @param {HTMLButtonElement} button */
+function shouldUnwrapButton(button) {
+  if (!(button instanceof HTMLButtonElement)) return false;
+  if (!isElementVisible(button)) return false;
+  if (isInChromeToolbar(button)) return false;
+  const type = (button.getAttribute("type") || "button").toLowerCase();
+  if (type === "submit" || type === "reset") return false;
+  return getButtonLabel(button).length >= MIN_CONTENT_BUTTON_CHARS;
+}
+
+/** @param {ParentNode} root */
+function unwrapContentButtons(root) {
+  const buttons = Array.from(root.querySelectorAll("button"));
+  for (const button of buttons) {
+    if (shouldUnwrapButton(button)) {
+      const div = document.createElement("div");
+      div.className = "md-ext-unwrapped-button";
+      div.textContent = getButtonLabel(button);
+      button.replaceWith(div);
+    } else {
+      button.remove();
+    }
+  }
+}
+
+/** @param {string} text */
+function isSpaEmptyState(text) {
+  return SPA_EMPTY_STATE_RE.test(String(text || ""));
+}
+
+/** @param {ParentNode} root @param {number} max */
+function capSpaListItems(root, max = MAX_SPA_LIST_ITEMS) {
+  const rows = root.querySelectorAll(".md-ext-unwrapped-button, [role='listitem']");
+  if (rows.length <= max) return;
+
+  let removed = 0;
+  for (let i = rows.length - 1; i >= max; i -= 1) {
+    rows[i].remove();
+    removed += 1;
+  }
+
+  if (removed > 0) {
+    const note = document.createElement("p");
+    note.textContent = `… ${removed} more rows on page (not shown).`;
+    root.appendChild(note);
+  }
+}
+
+/** @returns {HTMLElement[]} */
+function getSpaPanelCandidates() {
+  /** @type {HTMLElement[]} */
+  const out = [];
+  const seen = new Set();
+
+  const add = (el) => {
+    if (!(el instanceof HTMLElement)) return;
+    if (!isElementVisible(el)) return;
+    if (el.closest('[role="navigation"]')) return;
+    if (seen.has(el)) return;
+    if (getTextLength(el) < SPA_PANEL_MIN_SCORE) return;
+    seen.add(el);
+    out.push(el);
+  };
+
+  const main = document.querySelector("main, [role='main']");
+  if (main instanceof HTMLElement) {
+    for (const child of main.children) {
+      if (child instanceof HTMLElement) add(child);
+    }
+    if (out.length === 0) add(main);
+  }
+
+  document.querySelectorAll("article").forEach((el) => {
+    if (el instanceof HTMLElement) add(el);
+  });
+
+  return out;
+}
+
+/**
+ * Prefer detail pane when open; otherwise the densest content column (e.g. inbox list).
+ * @returns {{ html: string, title: string, pageType: string, warning?: string } | null}
+ */
+function extractSpaPrimaryPanel() {
+  const candidates = getSpaPanelCandidates();
+  if (candidates.length < 2 && !isLargeDocument()) return null;
+
+  const scored = candidates
+    .map((el) => {
+      const text = (el.textContent || "").replace(/\s+/g, " ").trim();
+      return {
+        el,
+        score: getTextLength(el),
+        isEmpty: isSpaEmptyState(text),
+      };
+    })
+    .filter((entry) => entry.score >= SPA_PANEL_MIN_SCORE)
+    .sort((a, b) => b.score - a.score);
+
+  if (scored.length === 0) return null;
+
+  const detail = scored.find((entry) => !entry.isEmpty);
+  const list = scored.find((entry) => entry !== detail) || scored[0];
+  const pick = detail || list;
+  if (!pick) return null;
+
+  const container = document.createElement("div");
+  container.appendChild(pick.el.cloneNode(true));
+  unwrapContentButtons(container);
+  applyGenericCleanup(container);
+  capSpaListItems(container);
+
+  const html = container.innerHTML.trim();
+  if (!html || getTextLength(container) < MIN_TEXT_LENGTH) return null;
+
+  const listRows = container.querySelectorAll(".md-ext-unwrapped-button, [role='listitem']").length;
+  let pageType = detail ? "article" : "listing";
+  if (!detail && listRows >= 5) pageType = "listing";
+
+  let warning;
+  if (!detail && list) warning = SPA_LIST_ONLY_WARNING;
+
+  return {
+    html,
+    title: "",
+    pageType,
+    warning,
+  };
+}
+
 /** @param {ParentNode} root */
 function applyGenericCleanup(root) {
+  unwrapContentButtons(root);
   removeBySelectors(root, GENERIC_REMOVE_SELECTORS);
   removeShallowNavLists(root);
   removeEmptyAnchors(root);
@@ -188,6 +377,7 @@ function applyGenericCleanup(root) {
 
 /** @param {ParentNode} root */
 function applyAugmentCleanup(root) {
+  unwrapContentButtons(root);
   removeBySelectors(root, AUGMENT_REMOVE_SELECTORS);
   removeShallowNavLists(root);
   removeEmptyAnchors(root);
@@ -265,6 +455,39 @@ function canAccessIframeDocument(iframe) {
 }
 
 /**
+ * Lightweight augment pass: cross-origin iframe stubs only.
+ * @param {string} coreText
+ * @returns {{ html: string, source: string }[]}
+ */
+function collectLiteAugmentBlocks(coreText) {
+  /** @type {{ html: string, source: string }[]} */
+  const blocks = [];
+  const doc = document;
+  const stubParts = [];
+  let stubCount = 0;
+
+  for (const iframe of doc.querySelectorAll("iframe")) {
+    if (stubCount >= MAX_CROSS_ORIGIN_IFRAME_STUBS) break;
+    if (!isElementVisible(iframe)) continue;
+    if (canAccessIframeDocument(iframe)) continue;
+    stubParts.push(describeIframeStub(iframe));
+    stubCount += 1;
+  }
+
+  if (stubParts.length > 0) {
+    const formHtml = `<section class="embedded-frames"><h3>Embedded frames (external)</h3>${stubParts.join("")}</section>`;
+    if (!isDuplicateOfCore(formHtml, coreText)) {
+      blocks.push({
+        html: formHtml,
+        source: "iframe_stub",
+      });
+    }
+  }
+
+  return blocks;
+}
+
+/**
  * @param {string} coreText
  * @returns {{ html: string, source: string }[]}
  */
@@ -272,6 +495,9 @@ function collectAugmentBlocks(coreText) {
   /** @type {{ html: string, source: string }[]} */
   const blocks = [];
   const doc = document;
+  const sectionCount = doc.querySelectorAll("section").length;
+  const skipSectionAugment = sectionCount > MAX_SECTION_COUNT_FOR_VISIBLE_AUGMENT;
+  let visibleCloneCount = 0;
 
   // Open shadow roots
   const shadowHost = document.createElement("div");
@@ -340,6 +566,8 @@ function collectAugmentBlocks(coreText) {
       doc.querySelectorAll(selector).forEach((el) => {
         if (!(el instanceof HTMLElement) || !isElementVisible(el)) return;
         if (getTextLength(el) < 120) return;
+        if (skipSectionAugment && selector === "section") return;
+        if (visibleCloneCount >= MAX_VISIBLE_REGION_CLONES) return;
 
         const clone = el.cloneNode(true);
         applyAugmentCleanup(clone);
@@ -352,6 +580,7 @@ function collectAugmentBlocks(coreText) {
           html: clone.innerHTML,
           source: "visible",
         });
+        visibleCloneCount += 1;
       });
     } catch {
       // Skip invalid selectors.
@@ -777,8 +1006,52 @@ function tryHomepageSubsection(container) {
   return container;
 }
 
+/**
+ * @param {Element} rootEl
+ * @returns {{ html: string, title: string, pageType: string } | null}
+ */
+function extractWithReadabilityOnElement(rootEl) {
+  const doc = document.implementation.createHTMLDocument(document.title || "");
+  doc.body.appendChild(rootEl.cloneNode(true));
+  preStripDocumentNoise(doc);
+
+  const reader = new Readability(doc, {
+    charThreshold: 100,
+    keepClasses: false,
+  });
+
+  const article = reader.parse();
+  if (!article?.content?.trim()) return null;
+
+  let container = htmlToContainer(article.content);
+  let pageType = detectPageType(container, document);
+
+  if (pageType === "homepage") {
+    container = tryHomepageSubsection(container);
+  }
+
+  const html = container.innerHTML.trim();
+  if (!html || getTextLength(container) < MIN_TEXT_LENGTH) return null;
+
+  return {
+    html,
+    title: (article.title || "").trim(),
+    pageType,
+  };
+}
+
 function extractWithReadability() {
   if (typeof Readability !== "function") {
+    return null;
+  }
+
+  if (isLargeDocument()) {
+    for (const selector of READABILITY_ROOT_SELECTORS) {
+      const el = document.querySelector(selector);
+      if (!el || !hasMeaningfulText(el)) continue;
+      const result = extractWithReadabilityOnElement(el);
+      if (result?.html) return result;
+    }
     return null;
   }
 
@@ -826,7 +1099,7 @@ function extractWithFallback() {
   }
 
   const body = document.body;
-  if (!body) return null;
+  if (!body || isLargeDocument()) return null;
 
   const container = document.createElement("div");
   container.appendChild(body.cloneNode(true));
@@ -943,21 +1216,30 @@ function extractPage() {
     warning = youtubeResult.warning;
     sources.push("youtube");
   } else {
-    const readabilityResult = extractWithReadability();
-    if (readabilityResult?.html) {
-      coreHtml = readabilityResult.html;
-      title = readabilityResult.title || title;
-      pageType = readabilityResult.pageType || "article";
-      sources.push("readability");
-      if (pageType === "homepage") warning = HOMEPAGE_WARNING;
+    const spaResult = extractSpaPrimaryPanel();
+    if (spaResult?.html) {
+      coreHtml = spaResult.html;
+      title = spaResult.title || title;
+      pageType = spaResult.pageType || "article";
+      sources.push("spa");
+      if (spaResult.warning) warning = spaResult.warning;
     } else {
-      const fallbackResult = extractWithFallback();
-      if (fallbackResult?.html) {
-        coreHtml = fallbackResult.html;
-        title = fallbackResult.title || title;
-        pageType = fallbackResult.pageType || "article";
-        sources.push("fallback");
+      const readabilityResult = extractWithReadability();
+      if (readabilityResult?.html) {
+        coreHtml = readabilityResult.html;
+        title = readabilityResult.title || title;
+        pageType = readabilityResult.pageType || "article";
+        sources.push("readability");
         if (pageType === "homepage") warning = HOMEPAGE_WARNING;
+      } else {
+        const fallbackResult = extractWithFallback();
+        if (fallbackResult?.html) {
+          coreHtml = fallbackResult.html;
+          title = fallbackResult.title || title;
+          pageType = fallbackResult.pageType || "article";
+          sources.push("fallback");
+          if (pageType === "homepage") warning = HOMEPAGE_WARNING;
+        }
       }
     }
   }
@@ -967,7 +1249,9 @@ function extractPage() {
     ? (coreContainer.textContent || "").replace(/\s+/g, " ").trim()
     : "";
 
-  const augmentBlocks = collectAugmentBlocks(coreText);
+  const augmentBlocks = shouldUseLiteAugment(coreText)
+    ? collectLiteAugmentBlocks(coreText)
+    : collectAugmentBlocks(coreText);
   const merged = mergeCoreAndAugment(coreHtml, coreText, augmentBlocks, sources);
   const finalHtml = merged.html;
   const finalSources = merged.sources;

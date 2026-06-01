@@ -11,6 +11,14 @@ const TRACKING_IMG_RE =
 
 const MAX_OUTPUT_WORDS = 80000;
 const LARGE_PAGE_WARNING = "Large page; output truncated.";
+const EXTRACTION_TIMEOUT_MS = 25000;
+const EXTRACTION_TIMEOUT_MESSAGE =
+  "Conversion timed out. Try selecting specific content on the page, then convert again.";
+const SPARSE_CONTENT_HINT =
+  "No readable content on this view. Open the item you want (e.g. select an email), then convert again.";
+const LOW_QUALITY_WORD_THRESHOLD = 100;
+const LOW_QUALITY_WARNING =
+  "Limited content captured; open the item you want on the page, then convert again.";
 
 let lastMarkdown = "";
 let lastTitle = "";
@@ -42,6 +50,39 @@ function sanitizeFilename(title) {
 async function getActiveTab() {
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
   return tab;
+}
+
+/** @param {string} message */
+function formatExtractionError(message) {
+  const msg = String(message || "").trim();
+  if (msg === "No readable content found") return SPARSE_CONTENT_HINT;
+  if (/could not establish connection/i.test(msg)) {
+    return "Content script not ready. Refresh the page, then convert again.";
+  }
+  return msg || "Conversion failed.";
+}
+
+/**
+ * @template T
+ * @param {Promise<T>} promise
+ * @param {number} ms
+ * @param {string} message
+ * @returns {Promise<T>}
+ */
+function withTimeout(promise, ms, message) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
 }
 
 function normalizeMarkdown(markdown) {
@@ -99,6 +140,13 @@ function countWordsInHtml(html) {
   const doc = new DOMParser().parseFromString(`<div>${html}</div>`, "text/html");
   const text = (doc.body?.textContent || "").replace(/\s+/g, " ").trim();
   return text ? text.split(/\s+/).filter(Boolean).length : 0;
+}
+
+/** @param {string} markdown */
+function countMarkdownBodyWords(markdown) {
+  const body = String(markdown || "").replace(/^---[\s\S]*?---\s*/m, "").trim();
+  if (!body) return 0;
+  return body.split(/\s+/).filter(Boolean).length;
 }
 
 /**
@@ -344,28 +392,39 @@ function mergeFrameExtractions(injectionResults) {
   };
 }
 
+async function runFrameExtraction(tabId, allFrames) {
+  const results = await chrome.scripting.executeScript({
+    target: { tabId, allFrames },
+    world: "ISOLATED",
+    func: () => {
+      if (typeof globalThis.markdownConvertExtractFrame === "function") {
+        return globalThis.markdownConvertExtractFrame();
+      }
+      return {
+        error: "Extraction not available in this frame",
+        html: "",
+        isTop: window === window.top,
+        url: location.href,
+        sources: [],
+      };
+    },
+  });
+
+  return mergeFrameExtractions(results);
+}
+
 async function extractFromTab(tabId) {
   if (chrome.scripting?.executeScript) {
     try {
-      const results = await chrome.scripting.executeScript({
-        target: { tabId, allFrames: true },
-        world: "ISOLATED",
-        func: () => {
-          if (typeof globalThis.markdownConvertExtractFrame === "function") {
-            return globalThis.markdownConvertExtractFrame();
-          }
-          return {
-            error: "Extraction not available in this frame",
-            html: "",
-            isTop: window === window.top,
-            url: location.href,
-            sources: [],
-          };
-        },
-      });
-
-      const merged = mergeFrameExtractions(results);
-      if (merged?.html || merged?.error) return merged;
+      let merged = await runFrameExtraction(tabId, false);
+      if (merged?.html || merged?.error) {
+        const iframeOrder = Array.isArray(merged.iframeOrder) ? merged.iframeOrder : [];
+        if (iframeOrder.length > 0) {
+          const withFrames = await runFrameExtraction(tabId, true);
+          if (withFrames?.html || withFrames?.error) merged = withFrames;
+        }
+        return merged;
+      }
     } catch {
       // Fall back to single-frame messaging (older Firefox, restricted URLs).
     }
@@ -382,7 +441,11 @@ async function convertActiveTab() {
     const tab = await getActiveTab();
     if (!tab?.id) throw new Error("No active tab found.");
 
-    const resp = await extractFromTab(tab.id);
+    const resp = await withTimeout(
+      extractFromTab(tab.id),
+      EXTRACTION_TIMEOUT_MS,
+      EXTRACTION_TIMEOUT_MESSAGE,
+    );
     if (!resp) throw new Error("No response from content script.");
     if (resp.error && !resp.html) throw new Error(resp.error);
 
@@ -409,7 +472,17 @@ async function convertActiveTab() {
 
     if (postActionsEl) postActionsEl.classList.toggle("hidden", !markdown);
 
-    const warnings = [String(resp.warning || "").trim(), truncated ? LARGE_PAGE_WARNING : ""]
+    const bodyWords = countMarkdownBodyWords(markdown);
+    const isLowQuality =
+      bodyWords > 0 &&
+      bodyWords < LOW_QUALITY_WORD_THRESHOLD &&
+      (resp.pageType === "sparse" || String(resp.pageType || "") === "listing");
+
+    const warnings = [
+      String(resp.warning || "").trim(),
+      isLowQuality ? LOW_QUALITY_WARNING : "",
+      truncated ? LARGE_PAGE_WARNING : "",
+    ]
       .filter(Boolean)
       .join(" ");
 
@@ -418,6 +491,11 @@ async function convertActiveTab() {
     } else {
       setStatus(markdown ? "Ready" : "No content found.");
     }
+  } catch (err) {
+    lastMarkdown = "";
+    if (markdownPreviewEl) markdownPreviewEl.value = "";
+    if (postActionsEl) postActionsEl.classList.add("hidden");
+    setStatus(formatExtractionError(err?.message ?? err), true);
   } finally {
     setBusy(false);
   }
