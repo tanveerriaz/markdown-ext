@@ -17,6 +17,8 @@ const SPA_EMPTY_STATE_RE = /select\s+.+\s+to\s+preview/i;
 const SPA_LIST_ONLY_WARNING =
   "No item open; converted visible list only. Select an email for full body.";
 const SPA_CHROME_ANCESTOR_RE = /toolbar|header|nav|sync|filter|masthead|sidebar-menu/i;
+const CONTENT_LIST_CLASS = "md-ext-content-list";
+const NAV_LIST_MAX_MEDIAN_LABEL_CHARS = 25;
 
 const PRE_STRIP_SELECTORS = [
   '[id*="onetrust" i]',
@@ -194,13 +196,29 @@ function removeEmptyAnchors(root) {
   });
 }
 
+/** @param {Element[]} items */
+function medianLinkLabelLength(items) {
+  const lengths = items
+    .map((li) => getTextLength(li))
+    .filter((len) => len > 0)
+    .sort((a, b) => a - b);
+  if (lengths.length === 0) return 0;
+  const mid = Math.floor(lengths.length / 2);
+  return lengths.length % 2 === 0 ? (lengths[mid - 1] + lengths[mid]) / 2 : lengths[mid];
+}
+
 /** @param {ParentNode} root */
 function removeShallowNavLists(root) {
   for (const list of root.querySelectorAll(":scope > ul, :scope > ol")) {
+    if (list.classList?.contains(CONTENT_LIST_CLASS)) continue;
+
     const directLinkItems = Array.from(list.children).filter(
       (li) => li.querySelector(":scope > a") && getTextLength(li) < 80,
     );
-    if (directLinkItems.length > 8) list.remove();
+    if (directLinkItems.length <= 8) continue;
+    if (medianLinkLabelLength(directLinkItems) >= NAV_LIST_MAX_MEDIAN_LABEL_CHARS) continue;
+
+    list.remove();
   }
 }
 
@@ -346,7 +364,7 @@ function extractInboxListFromDom() {
 
   if (headerText) parts.push(`<p>${escapeHtml(headerText)}</p>`);
 
-  parts.push("<ul>");
+  parts.push(`<ul class="${CONTENT_LIST_CLASS}">`);
   let exported = 0;
   for (const li of found.ul.querySelectorAll(":scope > li")) {
     if (exported >= MAX_SPA_LIST_ITEMS) break;
@@ -988,7 +1006,7 @@ function buildYouTubeListingHtml(videos, meta) {
 
   if (videos.length > 0) {
     parts.push(`<h2>Videos (${videos.length})</h2>`);
-    parts.push("<ul>");
+    parts.push(`<ul class="${CONTENT_LIST_CLASS}">`);
     for (const video of videos) {
       const metaHtml = video.meta
         ? ` <span>(${escapeHtml(video.meta)})</span>`
