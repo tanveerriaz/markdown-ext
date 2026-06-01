@@ -298,6 +298,113 @@ function capSpaListItems(root, max = MAX_SPA_LIST_ITEMS) {
   }
 }
 
+/** @returns {{ ul: HTMLUListElement; rowCount: number } | null} */
+function findPrimaryInboxUl() {
+  let best = null;
+  let bestRows = 0;
+
+  for (const root of document.querySelectorAll("main, [role='main']")) {
+    for (const ul of root.querySelectorAll("ul")) {
+      if (!(ul instanceof HTMLUListElement)) continue;
+      const items = ul.querySelectorAll(":scope > li");
+      if (items.length > bestRows) {
+        bestRows = items.length;
+        best = ul;
+      }
+    }
+  }
+
+  return best && bestRows >= 2 ? { ul: best, rowCount: bestRows } : null;
+}
+
+/**
+ * Build inbox markdown HTML from list item text (avoids button cleanup).
+ * @returns {{ html: string; title: string; pageType: string; warning?: string } | null}
+ */
+function extractInboxListFromDom() {
+  const found = findPrimaryInboxUl();
+  if (!found) return null;
+
+  const parts = ['<div class="md-ext-inbox-list">'];
+  let headerText = "";
+
+  let scan = found.ul.parentElement;
+  for (let depth = 0; depth < 5 && scan; depth += 1) {
+    for (const child of scan.children) {
+      if (child instanceof HTMLElement && (child === found.ul || child.contains(found.ul))) {
+        continue;
+      }
+      const text = (child.textContent || "").replace(/\s+/g, " ").trim();
+      if (/showing\s+\d+/i.test(text) && text.length < 160) {
+        headerText = text;
+        break;
+      }
+    }
+    if (headerText) break;
+    scan = scan.parentElement;
+  }
+
+  if (headerText) parts.push(`<p>${escapeHtml(headerText)}</p>`);
+
+  parts.push("<ul>");
+  let exported = 0;
+  for (const li of found.ul.querySelectorAll(":scope > li")) {
+    if (exported >= MAX_SPA_LIST_ITEMS) break;
+    const text = (li.textContent || "").replace(/\s+/g, " ").trim();
+    if (text.length < 4) continue;
+    parts.push(`<li>${escapeHtml(text)}</li>`);
+    exported += 1;
+  }
+  parts.push("</ul>");
+
+  if (found.rowCount > exported) {
+    parts.push(`<p>… ${found.rowCount - exported} more rows on page (not shown).</p>`);
+  }
+  parts.push("</div>");
+
+  const html = parts.join("\n");
+  const container = htmlToContainer(html);
+  if (getTextLength(container) < MIN_TEXT_LENGTH || exported < 2) return null;
+
+  const previewAside = document.querySelector("main aside, [role='main'] aside");
+  const warning =
+    previewAside && isSpaEmptyState(previewAside.textContent || "", previewAside)
+      ? SPA_LIST_ONLY_WARNING
+      : undefined;
+
+  return {
+    html: container.innerHTML.trim(),
+    title: "",
+    pageType: "listing",
+    warning,
+  };
+}
+
+/**
+ * @returns {{ html: string; title: string; pageType: string } | null}
+ */
+function extractEmailDetailFromDom() {
+  const docRoot = document.querySelector(".email-document, .email-body");
+  if (!docRoot || getTextLength(docRoot) < MIN_TEXT_LENGTH) return null;
+
+  const container = docRoot.closest("aside") || docRoot.parentElement;
+  if (!(container instanceof HTMLElement)) return null;
+
+  const wrap = document.createElement("div");
+  wrap.appendChild(container.cloneNode(true));
+  unwrapContentButtons(wrap);
+  applyGenericCleanup(wrap);
+
+  const html = wrap.innerHTML.trim();
+  if (!html || getTextLength(htmlToContainer(html)) < MIN_TEXT_LENGTH) return null;
+
+  return {
+    html,
+    title: "",
+    pageType: "article",
+  };
+}
+
 /** @returns {HTMLElement[]} */
 function getSpaPanelCandidates() {
   /** @type {HTMLElement[]} */
@@ -1156,6 +1263,12 @@ function extractWithReadability() {
 }
 
 function extractWithFallback() {
+  const inbox = extractInboxListFromDom();
+  if (inbox?.html) return inbox;
+
+  const detail = extractEmailDetailFromDom();
+  if (detail?.html) return detail;
+
   for (const selector of FALLBACK_ROOT_SELECTORS) {
     const el = document.querySelector(selector);
     if (el && hasMeaningfulText(el)) {
@@ -1288,29 +1401,46 @@ function extractPage() {
     warning = youtubeResult.warning;
     sources.push("youtube");
   } else {
-    const spaResult = extractSpaPrimaryPanel() || extractStructuredListColumn();
-    if (spaResult?.html) {
-      coreHtml = spaResult.html;
-      title = spaResult.title || title;
-      pageType = spaResult.pageType || "article";
+    const detailResult = extractEmailDetailFromDom();
+    const inboxResult = extractInboxListFromDom();
+
+    if (detailResult?.html) {
+      coreHtml = detailResult.html;
+      title = detailResult.title || title;
+      pageType = detailResult.pageType || "article";
       sources.push("spa");
-      if (spaResult.warning) warning = spaResult.warning;
+    } else if (inboxResult?.html) {
+      coreHtml = inboxResult.html;
+      title = inboxResult.title || title;
+      pageType = inboxResult.pageType || "listing";
+      sources.push("spa");
+      if (inboxResult.warning) warning = inboxResult.warning;
     } else {
-      const readabilityResult = extractWithReadability();
-      if (readabilityResult?.html) {
-        coreHtml = readabilityResult.html;
-        title = readabilityResult.title || title;
-        pageType = readabilityResult.pageType || "article";
-        sources.push("readability");
-        if (pageType === "homepage") warning = HOMEPAGE_WARNING;
+      const spaResult = extractSpaPrimaryPanel() || extractStructuredListColumn();
+      if (spaResult?.html) {
+        coreHtml = spaResult.html;
+        title = spaResult.title || title;
+        pageType = spaResult.pageType || "article";
+        sources.push("spa");
+        if (spaResult.warning) warning = spaResult.warning;
       } else {
-        const fallbackResult = extractWithFallback();
-        if (fallbackResult?.html) {
-          coreHtml = fallbackResult.html;
-          title = fallbackResult.title || title;
-          pageType = fallbackResult.pageType || "article";
-          sources.push("fallback");
+        const readabilityResult = extractWithReadability();
+        if (readabilityResult?.html) {
+          coreHtml = readabilityResult.html;
+          title = readabilityResult.title || title;
+          pageType = readabilityResult.pageType || "article";
+          sources.push("readability");
           if (pageType === "homepage") warning = HOMEPAGE_WARNING;
+        } else {
+          const fallbackResult = extractWithFallback();
+          if (fallbackResult?.html) {
+            coreHtml = fallbackResult.html;
+            title = fallbackResult.title || title;
+            pageType = fallbackResult.pageType || "article";
+            sources.push(fallbackResult.pageType === "listing" ? "spa" : "fallback");
+            if (fallbackResult.warning) warning = fallbackResult.warning;
+            if (pageType === "homepage") warning = HOMEPAGE_WARNING;
+          }
         }
       }
     }
